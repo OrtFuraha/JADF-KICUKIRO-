@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Dashboard · GovCert</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', 'Poppins', sans-serif; background: #F7F8FA; color: #1E1E1E; }
+    :root { --primary: #123A78; --gold: #C89A28; --light-gold: #E8C96B; --light-gray: #F7F8FA; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    
+    .navbar { background: var(--primary); color: white; padding: 16px 0; }
+    .navbar .container { display: flex; justify-content: space-between; align-items: center; }
+    .navbar .logo { font-size: 22px; font-weight: 700; }
+    .navbar .logo i { color: var(--gold); }
+    .navbar .user-info { display: flex; align-items: center; gap: 16px; }
+    .navbar .user-info span { font-weight: 500; }
+    .navbar .btn-logout { background: rgba(255,255,255,0.15); color: white; padding: 8px 20px; border: 1px solid rgba(255,255,255,0.2); border-radius: 40px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+    .navbar .btn-logout:hover { background: rgba(255,255,255,0.25); }
+    
+    .dashboard-header { padding: 40px 0 20px; }
+    .dashboard-header h1 { font-size: 32px; font-weight: 700; color: var(--primary); font-family: 'Montserrat', sans-serif; }
+    .dashboard-header p { color: #666; font-size: 16px; }
+    
+    .profile-section { background: white; border-radius: 24px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-bottom: 24px; }
+    .profile-section h2 { font-size: 24px; font-weight: 700; margin-bottom: 20px; font-family: 'Montserrat', sans-serif; }
+    .profile-section h2 i { color: var(--gold); margin-right: 8px; }
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .profile-field { padding: 12px 16px; background: var(--light-gray); border-radius: 12px; }
+    .profile-field label { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .profile-field .value { font-size: 18px; font-weight: 600; color: var(--primary); margin-top: 4px; }
+    
+    .certificate-section { background: white; border-radius: 24px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    .certificate-section h2 { font-size: 24px; font-weight: 700; margin-bottom: 20px; font-family: 'Montserrat', sans-serif; }
+    .certificate-section h2 i { color: var(--gold); margin-right: 8px; }
+    
+    .certificate-preview { max-width: 600px; margin: 0 auto 24px; border: 2px solid var(--light-gold); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+    .certificate-preview img { width: 100%; display: block; }
+    
+    .btn-download { background: var(--primary); color: white; padding: 14px 40px; border: none; border-radius: 60px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 10px; }
+    .btn-download:hover { background: #0e2f62; transform: scale(1.02); box-shadow: 0 8px 24px rgba(18,58,120,0.3); }
+    .btn-download i { font-size: 18px; }
+    
+    .appreciation-message { background: linear-gradient(135deg, #f5f0e8, #e8e0d0); padding: 20px 24px; border-radius: 16px; border-left: 4px solid var(--gold); margin-top: 20px; }
+    .appreciation-message p { font-size: 16px; color: #333; line-height: 1.6; font-style: italic; }
+    .appreciation-message .signature { font-weight: 600; color: var(--primary); margin-top: 8px; font-style: normal; }
+    
+    .toast { position: fixed; bottom: 30px; right: 30px; background: #27ae60; color: white; padding: 16px 24px; border-radius: 12px; font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: none; z-index: 999; }
+    .toast.show { display: block; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    
+    .logout-btn { cursor: pointer; }
+    
+    @media (max-width: 768px) { .profile-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="container">
+    <div class="logo"><i class="fas fa-award"></i> GovCert</div>
+    <div class="user-info">
+      <span id="user-name"><i class="fas fa-user"></i> User</span>
+      <button class="btn-logout logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="dashboard-header">
+    <h1>My Dashboard</h1>
+    <p id="user-greeting">Welcome back! Here is your certificate and profile information.</p>
+  </div>
+  
+  <div class="profile-section">
+    <h2><i class="fas fa-user-circle"></i> Personal Information</h2>
+    <div class="profile-grid">
+      <div class="profile-field">
+        <label>Full Names</label>
+        <div class="value" id="user-fullname">Loading...</div>
+      </div>
+      <div class="profile-field">
+        <label>Email</label>
+        <div class="value" id="user-email">Loading...</div>
+      </div>
+      <div class="profile-field">
+        <label>District</label>
+        <div class="value" id="user-district">Loading...</div>
+      </div>
+      <div class="profile-field">
+        <label>Sector</label>
+        <div class="value" id="user-sector">Loading...</div>
+      </div>
+      <div class="profile-field">
+        <label>Village</label>
+        <div class="value" id="user-village">Loading...</div>
+      </div>
+      <div class="profile-field">
+        <label>Organization</label>
+        <div class="value" id="user-organization">Loading...</div>
+      </div>
+    </div>
+    
+    <div class="appreciation-message">
+      <p><i class="fas fa-quote-left" style="color:var(--gold);opacity:0.5;margin-right:8px;"></i>
+        The District of Kicukiro extends its sincere gratitude to <strong id="appreciation-name">Loading...</strong> 
+        for your outstanding contribution to the District's development during the 2024–2025 fiscal year. 
+        Your partnership and dedication are highly valued and deeply appreciated.
+      </p>
+      <div class="signature">— MUTSINZI Antoine, Kicukiro District Executive Administrator</div>
+    </div>
+  </div>
+  
+  <div class="certificate-section">
+    <h2><i class="fas fa-certificate"></i> My Certificate</h2>
+    <div class="certificate-preview" id="cert-preview">
+      <img src="/certificate.jpg" alt="Certificate" id="cert-image" />
+    </div>
+    <div style="text-align:center;">
+      <button class="btn-download" onclick="downloadCertificate()">
+        <i class="fas fa-download"></i> Download Certificate (PDF)
+      </button>
+    </div>
+    <p style="text-align:center;color:#999;font-size:13px;margin-top:12px;">
+      <i class="fas fa-info-circle"></i> Your name will appear on the certificate
+    </p>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toast-message">Certificate downloaded successfully!</span></div>
+
+<script>
+// Load user data from session
+async function loadUserData() {
+  try {
+    const response = await fetch('/api/user/profile');
+    const data = await response.json();
+    
+    if (data.success) {
+      const user = data.user;
+      document.getElementById('user-fullname').textContent = user.full_name || 'N/A';
+      document.getElementById('user-email').textContent = user.email || 'N/A';
+      document.getElementById('user-district').textContent = user.district || 'KICUKIRO';
+      document.getElementById('user-sector').textContent = user.sector || 'N/A';
+      document.getElementById('user-village').textContent = user.village || 'N/A';
+      document.getElementById('user-organization').textContent = user.organization || 'N/A';
+      document.getElementById('appreciation-name').textContent = user.full_name || 'Valued Participant';
+      document.getElementById('user-name').innerHTML = '<i class="fas fa-user"></i> ' + (user.full_name || 'User');
+      document.getElementById('user-greeting').textContent = 'Welcome back, ' + (user.full_name || 'User') + '! Here is your certificate and profile information.';
+    } else {
+      window.location.href = '/login.html';
+    }
+  } catch (error) {
+    console.error('Error loading user data:', error);
+    window.location.href = '/login.html';
+  }
+}
+
+// Load user data on page load
+document.addEventListener('DOMContentLoaded', loadUserData);
+
+function downloadCertificate() {
+  const toast = document.getElementById('toast');
+  const toastMessage = document.getElementById('toast-message');
+  
+  toastMessage.textContent = '⏳ Generating your certificate...';
+  toast.classList.add('show');
+  
+  const userName = document.getElementById('user-fullname').textContent || 'JEAN PIERRE';
+  
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.src = '/certificate.jpg';
+  
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const width = 3508;
+    const height = 2480;
+    
+    canvas.width = width;
+    canvas.height = height;
+    
+    ctx.drawImage(img, 0, 0, width, height);
+    
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    const presentedTextY = height * 0.48;
+    ctx.font = 'italic 28px "Times New Roman", serif';
+    ctx.fillStyle = '#2c2c2c';
+    ctx.shadowColor = 'rgba(255,255,255,0.95)';
+    ctx.shadowBlur = 12;
+    ctx.fillText('This certificate is proudly presented to', width/2, presentedTextY);
+    ctx.shadowBlur = 0;
+    
+    const nameY = height * 0.56;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    ctx.font = 'bold 48px "Times New Roman", serif';
+    const metrics = ctx.measureText(userName.toUpperCase());
+    const textWidth = metrics.width;
+    const padding = 50;
+    const textHeight = 65;
+    const x = width / 2;
+    const y = nameY;
+    
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+    ctx.shadowColor = 'rgba(0,0,0,0.05)';
+    ctx.shadowBlur = 12;
+    const radius = 10;
+    const rectX = x - textWidth/2 - padding;
+    const rectY = y - textHeight/2 - 6;
+    const rectW = textWidth + padding * 2;
+    const rectH = textHeight + 12;
+    ctx.beginPath();
+    ctx.moveTo(rectX + radius, rectY);
+    ctx.lineTo(rectX + rectW - radius, rectY);
+    ctx.quadraticCurveTo(rectX + rectW, rectY, rectX + rectW, rectY + radius);
+    ctx.lineTo(rectX + rectW, rectY + rectH - radius);
+    ctx.quadraticCurveTo(rectX + rectW, rectY + rectH, rectX + rectW - radius, rectY + rectH);
+    ctx.lineTo(rectX + radius, rectY + rectH);
+    ctx.quadraticCurveTo(rectX, rectY + rectH, rectX, rectY + rectH - radius);
+    ctx.lineTo(rectX, rectY + radius);
+    ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    
+    ctx.font = 'bold 48px "Times New Roman", serif';
+    ctx.fillStyle = '#C89A28';
+    ctx.shadowColor = 'rgba(0,0,0,0.08)';
+    ctx.shadowBlur = 5;
+    ctx.fillText(userName.toUpperCase(), x, y);
+    ctx.shadowBlur = 0;
+    
+    const recognitionY = height * 0.64;
+    ctx.font = '18px "Times New Roman", serif';
+    ctx.fillStyle = '#2c2c2c';
+    ctx.shadowColor = 'rgba(255,255,255,0.9)';
+    ctx.shadowBlur = 8;
+    ctx.fillText('In recognition of his/her active participation in the General Assembly', width/2, recognitionY);
+    ctx.shadowBlur = 0;
+    
+    const forumY = height * 0.68;
+    ctx.font = '18px "Times New Roman", serif';
+    ctx.fillStyle = '#2c2c2c';
+    ctx.fillText('of the Joint Action Development Forum (JADF) of Kicukiro District', width/2, forumY);
+    
+    const heldOnY = height * 0.72;
+    ctx.font = '18px "Times New Roman", serif';
+    ctx.fillStyle = '#2c2c2c';
+    ctx.fillText('held on', width/2 - 50, heldOnY);
+    
+    const currentDate = new Date();
+    const dateStr = currentDate.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    ctx.font = '18px "Times New Roman", serif';
+    ctx.fillStyle = '#123A78';
+    ctx.fillText(dateStr, width/2 + 30, heldOnY);
+    
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+      hotfixes: ['px_scaling']
+    });
+    
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+    pdf.save('Certificate_Participation_' + userName.replace(/\s/g, '_') + '.pdf');
+    
+    fetch('/api/certificate/download', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_id: null })
+    }).catch(err => console.error('Failed to record download:', err));
+    
+    toastMessage.textContent = '✅ Certificate downloaded successfully!';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  };
+  
+  img.onerror = function() {
+    toastMessage.textContent = '⚠️ Generating fallback certificate...';
+    
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4',
+      compress: true
+    });
+    
+    pdf.setFillColor(245, 240, 232);
+    pdf.rect(0, 0, 297, 210, 'F');
+    
+    pdf.setDrawColor(200, 154, 40);
+    pdf.setLineWidth(2);
+    pdf.rect(10, 10, 277, 190);
+    pdf.setDrawColor(18, 58, 120);
+    pdf.setLineWidth(1);
+    pdf.rect(15, 15, 267, 180);
+    
+    pdf.setFont('times', 'bold');
+    pdf.setFontSize(32);
+    pdf.setTextColor(18, 58, 120);
+    pdf.text('CERTIFICATE', 148.5, 35, { align: 'center' });
+    pdf.setFontSize(28);
+    pdf.setTextColor(200, 154, 40);
+    pdf.text('OF PARTICIPATION', 148.5, 50, { align: 'center' });
+    
+    pdf.setDrawColor(200, 154, 40);
+    pdf.setLineWidth(1);
+    pdf.line(120, 57, 177, 57);
+    
+    pdf.setFont('times', 'italic');
+    pdf.setFontSize(18);
+    pdf.setTextColor(44, 44, 44);
+    pdf.text('This certificate is proudly presented to', 148.5, 75, { align: 'center' });
+    
+    pdf.setFont('times', 'bold');
+    pdf.setFontSize(36);
+    pdf.setTextColor(200, 154, 40);
+    pdf.text(userName.toUpperCase(), 148.5, 95, { align: 'center' });
+    
+    pdf.setFont('times', 'normal');
+    pdf.setFontSize(14);
+    pdf.setTextColor(44, 44, 44);
+    pdf.text('In recognition of his/her active participation in the General Assembly', 148.5, 120, { align: 'center' });
+    pdf.text('of the Joint Action Development Forum (JADF) of Kicukiro District,', 148.5, 133, { align: 'center' });
+    
+    const currentDate = new Date();
+    const dateStr = currentDate.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    pdf.text('held on ' + dateStr, 148.5, 150, { align: 'center' });
+    
+    pdf.setFontSize(12);
+    pdf.setTextColor(51, 51, 51);
+    pdf.text('Your commitment and valuable contribution to strengthening partnership', 148.5, 170, { align: 'center' });
+    pdf.text('and promoting inclusive and sustainable development in Kicukiro District', 148.5, 180, { align: 'center' });
+    pdf.text('are highly appreciated.', 148.5, 190, { align: 'center' });
+    
+    pdf.setFont('times', 'bold');
+    pdf.setFontSize(12);
+    pdf.setTextColor(18, 58, 120);
+    pdf.text('Chairperson of JADF – Kicukiro District', 80, 200, { align: 'center' });
+    pdf.text('District Executive Administrator', 220, 200, { align: 'center' });
+    pdf.setFont('times', 'normal');
+    pdf.setFontSize(10);
+    pdf.setTextColor(85, 85, 85);
+    pdf.text('Kicukiro District', 220, 207, { align: 'center' });
+    
+    pdf.save('Certificate_Participation_' + userName.replace(/\s/g, '_') + '.pdf');
+    
+    toastMessage.textContent = '✅ Certificate downloaded successfully!';
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  };
+}
+
+async function logout() {
+  try {
+    await fetch('/api/logout', { method: 'POST' });
+  } catch (error) {
+    console.error('Logout error:', error);
+  }
+  localStorage.removeItem('govcert_user');
+  window.location.href = '/login.html';
+}
+</script>
+</body>
+</html>

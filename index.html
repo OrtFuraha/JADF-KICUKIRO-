@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GovCert · Event & Certificate Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', 'Poppins', 'Montserrat', sans-serif; background: #F7F8FA; color: #1E1E1E; scroll-behavior: smooth; }
+    :root { --primary: #123A78; --secondary: #1E5AA8; --gold: #C89A28; --light-gold: #E8C96B; --white: #FFFFFF; --light-gray: #F7F8FA; --dark: #1E1E1E; --glass: rgba(255,255,255,0.55); --shadow: 0 20px 40px -12px rgba(18,58,120,0.15); }
+    a { text-decoration: none; color: inherit; }
+    ul { list-style: none; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+    .glass-card { background: var(--glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 28px; border: 1px solid rgba(255,255,255,0.3); box-shadow: var(--shadow); }
+    .btn-primary { background: var(--primary); color: white; padding: 12px 32px; border-radius: 60px; font-weight: 600; border: none; transition: all 0.2s; box-shadow: 0 6px 14px rgba(18,58,120,0.25); display: inline-block; cursor: pointer; }
+    .btn-primary:hover { background: #0e2f62; transform: scale(1.02); }
+    .btn-secondary { background: transparent; color: var(--primary); padding: 12px 32px; border-radius: 60px; font-weight: 600; border: 1.5px solid var(--primary); transition: 0.2s; display: inline-block; cursor: pointer; }
+    .btn-secondary:hover { background: var(--primary); color: white; }
+    .btn-gold { background: var(--gold); color: white; padding: 12px 32px; border-radius: 60px; font-weight: 600; border: none; transition: 0.2s; box-shadow: 0 6px 14px rgba(200,154,40,0.3); display: inline-block; cursor: pointer; }
+    .btn-gold:hover { background: #b68a22; transform: scale(1.02); }
+    
+    .navbar { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.72); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.4); padding: 12px 0; }
+    .navbar .container { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .nav-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 22px; color: var(--primary); cursor: pointer; }
+    .nav-logo i { color: var(--gold); font-size: 28px; }
+    .nav-links { display: flex; gap: 28px; font-weight: 500; font-size: 15px; align-items: center; }
+    .nav-links a { transition: 0.15s; padding: 4px 0; border-bottom: 2px solid transparent; cursor: pointer; }
+    .nav-links a:hover { color: var(--primary); border-bottom-color: var(--gold); }
+    .nav-actions { display: flex; gap: 16px; align-items: center; }
+    .nav-actions a { font-weight: 600; font-size: 14px; }
+    .nav-actions .login { background: var(--primary); color: white; padding: 8px 24px; border-radius: 40px; transition: 0.2s; cursor: pointer; }
+    .nav-actions .login:hover { background: #0e2f62; transform: scale(1.02); }
+    .nav-actions .login i { margin-right: 6px; }
+
+    .hero { padding: 60px 0 80px; position: relative; overflow: hidden; background: linear-gradient(135deg, #f5f0e8 0%, #e8e0d0 50%, #f5f0e8 100%); }
+    .hero::before { content: ''; position: absolute; top: -10%; right: -8%; width: 550px; height: 550px; background: radial-gradient(circle, rgba(200,154,40,0.12) 0%, transparent 70%); border-radius: 50%; z-index: 0; }
+    .hero::after { content: ''; position: absolute; bottom: -10%; left: -5%; width: 400px; height: 400px; background: radial-gradient(circle, rgba(18,58,120,0.08) 0%, transparent 70%); border-radius: 50%; z-index: 0; }
+    .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; position: relative; z-index: 2; }
+    .hero-badge { display: inline-block; background: rgba(200,154,40,0.15); color: var(--gold); font-weight: 600; font-size: 14px; padding: 6px 18px; border-radius: 40px; margin-bottom: 16px; border: 1px solid rgba(200,154,40,0.25); }
+    .hero h1 { font-size: 52px; font-weight: 700; line-height: 1.1; font-family: 'Montserrat', sans-serif; margin-bottom: 12px; color: #1E1E1E; }
+    .hero h1 .highlight { color: var(--primary); background: linear-gradient(135deg, var(--primary), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero h1 .gold-text { color: var(--gold); }
+    .hero p { font-size: 18px; line-height: 1.6; color: #3a3a3a; max-width: 480px; margin: 16px 0 28px; }
+    .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
+    .hero-right { position: relative; display: flex; justify-content: center; align-items: center; }
+    .hero-logo { max-width: 100%; max-height: 250px; width: auto; height: auto; object-fit: contain; }
+
+    .section-title { font-size: 36px; font-weight: 700; font-family: 'Montserrat', sans-serif; text-align: center; margin-bottom: 16px; }
+    .section-title i { color: var(--gold); margin-right: 8px; }
+    .section-sub { text-align: center; color: #4a4a4a; max-width: 640px; margin: 0 auto 48px; font-size: 18px; }
+
+    .services { padding: 64px 0; background: white; }
+    .services-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
+    .service-card { background: white; padding: 28px 20px; border-radius: 28px; border: 1px solid rgba(200,154,40,0.08); transition: all 0.25s; text-align: center; }
+    .service-card:hover { transform: translateY(-8px); box-shadow: 0 30px 44px -18px rgba(18,58,120,0.15); border-color: var(--light-gold); }
+    .service-card i { font-size: 32px; color: var(--primary); background: rgba(18,58,120,0.06); padding: 14px; border-radius: 20px; margin-bottom: 14px; }
+    .service-card h4 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+    .service-card p { color: #4a4a4a; font-size: 14px; line-height: 1.5; }
+
+    .featured-events { padding: 64px 0; background: var(--light-gray); }
+    .event-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 28px; }
+    .event-card { border-radius: 28px; overflow: hidden; background: white; box-shadow: var(--shadow); transition: 0.25s; border: 1px solid rgba(255,255,255,0.6); }
+    .event-card:hover { transform: translateY(-6px); }
+    .event-image { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 48px; opacity: 0.3; }
+    .event-body { padding: 20px 20px 24px; }
+    .event-body h4 { font-weight: 700; font-size: 18px; }
+    .event-body .meta { display: flex; gap: 16px; font-size: 14px; color: #4a4a4a; margin: 8px 0 12px; }
+    .event-body .meta i { margin-right: 4px; color: var(--gold); }
+    .event-body .countdown { font-weight: 600; color: var(--primary); background: rgba(18,58,120,0.06); padding: 6px 14px; border-radius: 40px; display: inline-block; margin-bottom: 12px; font-size: 14px; }
+
+    .certificate-showcase { background: linear-gradient(145deg, #f0f3f9 0%, #ffffff 100%); padding: 64px 0; }
+    .cert-preview { max-width: 800px; margin: 0 auto; background: white; border-radius: 36px; padding: 32px 40px; box-shadow: 0 30px 60px -20px rgba(18,58,120,0.25); border: 1px solid var(--light-gold); text-align: center; }
+    .cert-preview .cert-icon { display: flex; gap: 32px; font-size: 40px; color: var(--gold); justify-content: center; margin: 16px 0; }
+    .cert-preview h3 { font-size: 32px; font-weight: 700; color: var(--primary); font-family: 'Montserrat', sans-serif; }
+    .cert-preview .gold-stripe { width: 120px; height: 4px; background: var(--gold); margin: 8px auto; border-radius: 4px; }
+
+    .cert-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 40px; }
+    .cert-modal.show { display: flex; }
+    .cert-modal-content { max-width: 700px; width: 100%; background: white; border-radius: 24px; padding: 30px; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+    .cert-modal-content .close-btn { position: absolute; top: 10px; right: 20px; font-size: 36px; cursor: pointer; color: #999; transition: 0.2s; line-height: 1; z-index: 10; }
+    .cert-modal-content .close-btn:hover { color: #333; transform: rotate(90deg); }
+    .cert-modal-content .cert-image { width: 100%; border-radius: 12px; display: block; }
+    .cert-modal-content .cert-title { text-align: center; color: var(--primary); font-size: 22px; font-weight: 700; font-family: 'Montserrat', sans-serif; margin-bottom: 5px; }
+    .cert-modal-content .cert-subtitle { text-align: center; color: var(--gold); font-size: 16px; font-weight: 600; margin-bottom: 15px; }
+
+    .how-it-works { padding: 64px 0; background: white; }
+    .timeline { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 40px; max-width: 880px; margin: 0 auto; }
+    .timeline-item { display: flex; align-items: center; gap: 12px; background: var(--light-gray); padding: 12px 28px; border-radius: 100px; border: 1px solid rgba(200,154,40,0.08); font-weight: 500; }
+    .timeline-item .step { background: var(--primary); color: white; width: 32px; height: 32px; border-radius: 40px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+
+    .partners { padding: 40px 0; background: white; border-top: 1px solid #eef0f5; }
+    .partner-slider { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px 60px; align-items: center; font-weight: 500; color: #5a5a5a; font-size: 18px; }
+    .partner-slider i { font-size: 40px; color: var(--primary); opacity: 0.5; }
+
+    .cta-section { background: var(--primary); padding: 64px 0; color: white; text-align: center; }
+    .cta-section h2 { font-size: 38px; font-weight: 700; font-family: 'Montserrat', sans-serif; margin-bottom: 12px; }
+    .cta-section .btn-gold { background: var(--gold); color: var(--dark); margin: 8px; }
+    .cta-section .btn-gold:hover { background: #b68a22; color: white; }
+    .cta-section .btn-secondary { border-color: white; color: white; }
+    .cta-section .btn-secondary:hover { background: white; color: var(--primary); }
+
+    footer { background: #0f2a5a; color: #d0d9e8; padding: 40px 0 24px; }
+    footer .container { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; }
+    footer h5 { color: white; font-weight: 600; margin-bottom: 12px; }
+    footer a { display: block; margin: 6px 0; font-size: 14px; transition: 0.15s; cursor: pointer; }
+    footer a:hover { color: var(--light-gold); }
+    footer .copyright { grid-column: 1 / -1; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 24px; text-align: center; font-size: 14px; }
+
+    .floating { animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+
+    .empty-events { text-align: center; padding: 60px 20px; color: #999; grid-column: 1 / -1; }
+    .empty-events i { font-size: 64px; margin-bottom: 16px; display: block; color: var(--gold); opacity: 0.3; }
+    .empty-events h3 { font-size: 24px; color: #555; margin-bottom: 8px; }
+    .empty-events p { font-size: 16px; }
+
+    .toast { position: fixed; bottom: 30px; right: 30px; background: #27ae60; color: white; padding: 16px 24px; border-radius: 12px; font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: none; z-index: 999; }
+    .toast.show { display: block; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    @media (max-width: 1024px) { .hero-grid { grid-template-columns: 1fr; } .services-grid { grid-template-columns: 1fr 1fr; } .event-cards { grid-template-columns: 1fr 1fr; } footer .container { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 768px) { .nav-links { display: none; } .services-grid { grid-template-columns: 1fr; } .event-cards { grid-template-columns: 1fr; } .hero h1 { font-size: 36px; } footer .container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="container">
+    <div class="nav-logo" onclick="scrollToSection('hero')">
+      <i class="fas fa-award"></i> GovCert
+    </div>
+    <ul class="nav-links">
+      <li><a onclick="scrollToSection('hero')">Home</a></li>
+      <li><a onclick="scrollToSection('events')">Events</a></li>
+      <li><a onclick="scrollToSection('certificates')">Certificates</a></li>
+      <li><a onclick="scrollToSection('how-it-works')">How It Works</a></li>
+      <li><a onclick="scrollToSection('partners')">Partners</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="/login.html" class="login"><i class="fas fa-sign-in-alt"></i> Login</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Banner -->
+<section class="hero" id="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="hero-badge"><i class="fas fa-calendar-alt"></i> JADF 2026 · Opening Day</div>
+      <h1>
+        <span class="gold-text">JADF</span> 2026<br />
+        <span class="highlight">Joint Action Development</span><br />
+        <span class="highlight">Forum</span>
+      </h1>
+      <p id="hero-description">Join us for the Joint Action Development Forum (JADF) 2026 opening day. A premier event bringing together stakeholders, policymakers, and development partners to drive collective action for sustainable development and community empowerment.</p>
+      <div class="hero-btns">
+        <a onclick="scrollToSection('events')" class="btn-primary"><i class="fas fa-calendar-check"></i> Register Now</a>
+        <a onclick="scrollToSection('events')" class="btn-secondary"><i class="fas fa-info-circle"></i> Learn More</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="glass-card" style="padding:30px;text-align:center;display:flex;align-items:center;justify-content:center;">
+        <img src="/jadf-logo.png" alt="JADF Logo" class="hero-logo" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Events Section -->
+<section class="featured-events" id="events">
+  <div class="container">
+    <h2 class="section-title"><i class="fas fa-calendar-alt"></i> Upcoming Events</h2>
+    <p class="section-sub" id="events-sub">Discover our latest events and earn digital certificates.</p>
+    <div class="event-cards" id="event-cards-container">
+      <!-- Events loaded dynamically from API -->
+    </div>
+  </div>
+</section>
+
+<!-- Services -->
+<section class="services" id="services">
+  <div class="container">
+    <h2 class="section-title"><i class="fas fa-handshake"></i> Our Services</h2>
+    <p class="section-sub" id="services-sub">The Joint Action Development Forum (JADF) coordinates and facilitates development partnerships for sustainable community development.</p>
+    <div class="services-grid" id="services-container">
+      <div class="service-card">
+        <i class="fas fa-handshake"></i>
+        <h4 id="service1-title">Coordination of Development Partners</h4>
+        <p id="service1-desc">Facilitating effective collaboration and coordination among all development stakeholders and partners.</p>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-users-cog"></i>
+        <h4 id="service2-title">JADF General Assemblies & Meetings</h4>
+        <p id="service2-desc">Organizing and facilitating JADF General Assemblies and coordination meetings.</p>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-share-alt"></i>
+        <h4 id="service3-title">Information Sharing & Networking</h4>
+        <p id="service3-desc">Promoting information sharing and networking among stakeholders.</p>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-chart-line"></i>
+        <h4 id="service4-title">Monitoring & Evaluation</h4>
+        <p id="service4-desc">Monitoring and evaluation of partners' interventions and impact.</p>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-graduation-cap"></i>
+        <h4 id="service5-title">Capacity Building & Knowledge Sharing</h4>
+        <p id="service5-desc">Building capacity and sharing knowledge among development partners.</p>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-hand-holding-heart"></i>
+        <h4 id="service6-title">Public-Private-Civil Society Partnerships</h4>
+        <p id="service6-desc">Promoting public-private-civil society partnerships for development.</p>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-hand-holding-usd"></i>
+        <h4 id="service7-title">Resource Mobilization</h4>
+        <p id="service7-desc">Mobilization and coordination of resources for local development.</p>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-leaf"></i>
+        <h4 id="service8-title">Sustainable Development Initiatives</h4>
+        <p id="service8-desc">Supporting inclusive and sustainable socio-economic development initiatives.</p>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-bullhorn"></i>
+        <h4 id="service9-title">Advocacy & Stakeholder Engagement</h4>
+        <p id="service9-desc">Advocacy and stakeholder engagement for development priorities.</p>
+      </div>
+      <div class="service-card">
+        <i class="fas fa-check-circle"></i>
+        <h4 id="service10-title">Accountability & Collaboration</h4>
+        <p id="service10-desc">Promoting accountability and collaboration among development partners.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Certificate Preview -->
+<section class="certificate-showcase" id="certificates">
+  <div class="container">
+    <h2 class="section-title"><i class="fas fa-certificate"></i> Certificate Preview</h2>
+    <p class="section-sub" id="cert-sub">See how your digital certificates will look.</p>
+    <div class="cert-preview glass-card floating">
+      <div class="cert-icon"><i class="fas fa-award"></i><i class="fas fa-qrcode"></i><i class="fas fa-pen-fancy"></i></div>
+      <h3 id="cert-title">Certificate of Participation</h3>
+      <div class="gold-stripe"></div>
+      <p id="cert-issuer" style="color:#1E1E1E;font-weight:500;">JADF 2026 · Joint Action Development Forum</p>
+      <a onclick="openCertificateModal()" class="btn-gold" style="margin-top:24px;cursor:pointer;"><i class="fas fa-eye"></i> View Certificate</a>
+    </div>
+  </div>
+</section>
+
+<!-- Certificate Modal -->
+<div class="cert-modal" id="certModal">
+  <div class="cert-modal-content">
+    <span class="close-btn" onclick="closeCertificateModal()">&times;</span>
+    <div class="cert-title">CERTIFICATE OF PARTICIPATION</div>
+    <div class="cert-subtitle">JADF 2026 · Joint Action Development Forum</div>
+    <img id="certificate-image" src="/certificate.jpg" alt="Certificate of Participation" class="cert-image" />
+  </div>
+</div>
+
+<!-- How It Works -->
+<section class="how-it-works" id="how-it-works">
+  <div class="container">
+    <h2 class="section-title"><i class="fas fa-arrow-right"></i> How It Works</h2>
+    <p class="section-sub" id="how-sub">Simple steps to get your digital certificate.</p>
+    <div class="timeline" id="timeline-container">
+      <div class="timeline-item"><span class="step">1</span> <span id="step1">Register</span></div>
+      <div class="timeline-item"><span class="step">2</span> <span id="step2">Attend Event</span></div>
+      <div class="timeline-item"><span class="step">3</span> <span id="step3">Verification</span></div>
+      <div class="timeline-item"><span class="step">4</span> <span id="step4">Receive Certificate</span></div>
+      <div class="timeline-item"><span class="step">5</span> <span id="step5">Download PDF</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Partners -->
+<section class="partners" id="partners">
+  <div class="container partner-slider">
+    <span><i class="fas fa-university"></i> Government</span>
+    <span><i class="fas fa-hand-holding-heart"></i> NGOs</span>
+    <span><i class="fas fa-building"></i> Companies</span>
+    <span><i class="fas fa-graduation-cap"></i> Universities</span>
+    <span><i class="fas fa-globe"></i> Global Partners</span>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="container">
+    <h2 id="cta-title">Ready to organize your next event?</h2>
+    <p id="cta-sub" style="font-size:18px;margin-bottom:20px;">Join thousands of organizations using GovCert.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <a onclick="showToast('📅 Create Event form opened')" class="btn-gold" style="cursor:pointer;"><i class="fas fa-plus-circle"></i> Create Event</a>
+      <a onclick="showToast('📧 Contact form opened')" class="btn-secondary" style="cursor:pointer;border-color:white;color:white;"><i class="fas fa-envelope"></i> Contact Us</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div><h5 style="display:flex;gap:8px;align-items:center;"><i class="fas fa-award" style="color:var(--gold);"></i> GovCert</h5><p style="font-size:14px;max-width:220px;" id="footer-desc">Official Event & Certificate Management System</p></div>
+    <div><h5>Quick Links</h5>
+      <a onclick="scrollToSection('hero')">Home</a>
+      <a onclick="scrollToSection('events')">Events</a>
+      <a onclick="scrollToSection('certificates')">Certificates</a>
+      <a onclick="scrollToSection('how-it-works')">How It Works</a>
+    </div>
+    <div><h5>Contact</h5>
+      <a><i class="fas fa-envelope"></i> <span id="footer-email">support@govcert.io</span></a>
+      <a><i class="fas fa-phone"></i> <span id="footer-phone">+1 202 555 0199</span></a>
+    </div>
+    <div class="copyright" id="footer-copyright">© 2025 GovCert. All rights reserved. Privacy Policy · Terms of Service</div>
+  </div>
+</footer>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+  <i class="fas fa-check-circle"></i> <span id="toast-message">Action completed!</span>
+</div>
+
+<script>
+// Load events from API
+async function loadEvents() {
+  try {
+    const response = await fetch('/api/events');
+    const data = await response.json();
+    
+    if (data.success) {
+      const events = data.events || [];
+      const container = document.getElementById('event-cards-container');
+      
+      if (events.length === 0) {
+        container.innerHTML = `
+          <div class="empty-events">
+            <i class="fas fa-calendar-plus"></i>
+            <h3>No Events Available</h3>
+            <p>Check back later for upcoming events.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = events.map((event) => `
+        <div class="event-card">
+          <div class="event-image" style="background:${event.color || '#d4dcec'};">
+            <i class="${event.icon || 'fas fa-calendar'}"></i>
+          </div>
+          <div class="event-body">
+            <h4>${event.title}</h4>
+            <div class="meta">
+              <span><i class="fas fa-map-pin"></i> ${event.location}</span>
+              <span><i class="fas fa-calendar"></i> ${event.date}</span>
+            </div>
+            <div class="countdown"><i class="fas fa-clock"></i> ${event.countdown || 'Coming Soon'}</div>
+            <a onclick="showToast('✅ Registered for ${event.title}')" class="btn-primary" style="padding:8px 24px;font-size:14px;cursor:pointer;">Register</a>
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (error) {
+    console.error('Error loading events:', error);
+  }
+}
+
+// Scroll to section function
+function scrollToSection(sectionId) {
+  const section = document.getElementById(sectionId);
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// Toast notification
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  const toastMessage = document.getElementById('toast-message');
+  toastMessage.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Open certificate modal
+function openCertificateModal() {
+  const savedCert = localStorage.getItem('govcert_certificate');
+  const certImage = document.getElementById('certificate-image');
+  if (savedCert) {
+    certImage.src = savedCert;
+  } else {
+    certImage.src = '/certificate.jpg';
+  }
+  document.getElementById('certModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCertificateModal() {
+  document.getElementById('certModal').classList.remove('show');
+  document.body.style.overflow = 'auto';
+}
+
+// Load saved content from localStorage
+document.addEventListener('DOMContentLoaded', function() {
+  function loadContent(elementId, defaultValue) {
+    const saved = localStorage.getItem('govcert_' + elementId);
+    const element = document.getElementById(elementId);
+    if (element && saved !== null) {
+      element.textContent = saved;
+    } else if (element) {
+      element.textContent = defaultValue;
+    }
+  }
+
+  loadContent('hero-description', 'Join us for the Joint Action Development Forum (JADF) 2026 opening day. A premier event bringing together stakeholders, policymakers, and development partners to drive collective action for sustainable development and community empowerment.');
+  loadContent('events-sub', 'Discover our latest events and earn digital certificates.');
+  loadContent('services-sub', 'The Joint Action Development Forum (JADF) coordinates and facilitates development partnerships for sustainable community development.');
+  loadContent('service1-title', 'Coordination of Development Partners');
+  loadContent('service1-desc', 'Facilitating effective collaboration and coordination among all development stakeholders and partners.');
+  loadContent('service2-title', 'JADF General Assemblies & Meetings');
+  loadContent('service2-desc', 'Organizing and facilitating JADF General Assemblies and coordination meetings.');
+  loadContent('service3-title', 'Information Sharing & Networking');
+  loadContent('service3-desc', 'Promoting information sharing and networking among stakeholders.');
+  loadContent('service4-title', 'Monitoring & Evaluation');
+  loadContent('service4-desc', 'Monitoring and evaluation of partners\' interventions and impact.');
+  loadContent('service5-title', 'Capacity Building & Knowledge Sharing');
+  loadContent('service5-desc', 'Building capacity and sharing knowledge among development partners.');
+  loadContent('service6-title', 'Public-Private-Civil Society Partnerships');
+  loadContent('service6-desc', 'Promoting public-private-civil society partnerships for development.');
+  loadContent('service7-title', 'Resource Mobilization');
+  loadContent('service7-desc', 'Mobilization and coordination of resources for local development.');
+  loadContent('service8-title', 'Sustainable Development Initiatives');
+  loadContent('service8-desc', 'Supporting inclusive and sustainable socio-economic development initiatives.');
+  loadContent('service9-title', 'Advocacy & Stakeholder Engagement');
+  loadContent('service9-desc', 'Advocacy and stakeholder engagement for development priorities.');
+  loadContent('service10-title', 'Accountability & Collaboration');
+  loadContent('service10-desc', 'Promoting accountability and collaboration among development partners.');
+  loadContent('cert-sub', 'See how your digital certificates will look.');
+  loadContent('cert-title', 'Certificate of Participation');
+  loadContent('cert-issuer', 'JADF 2026 · Joint Action Development Forum');
+  loadContent('how-sub', 'Simple steps to get your digital certificate.');
+  loadContent('step1', 'Register');
+  loadContent('step2', 'Attend Event');
+  loadContent('step3', 'Verification');
+  loadContent('step4', 'Receive Certificate');
+  loadContent('step5', 'Download PDF');
+  loadContent('cta-title', 'Ready to organize your next event?');
+  loadContent('cta-sub', 'Join thousands of organizations using GovCert.');
+  loadContent('footer-desc', 'Official Event & Certificate Management System');
+  loadContent('footer-email', 'support@govcert.io');
+  loadContent('footer-phone', '+1 202 555 0199');
+  loadContent('footer-copyright', '© 2025 GovCert. All rights reserved. Privacy Policy · Terms of Service');
+
+  // Load events from API
+  loadEvents();
+});
+
+// Auto-refresh events when admin updates them
+window.addEventListener('storage', function(e) {
+  if (e.key === 'govcert_events_updated' || e.key === 'govcert_stats_updated') {
+    loadEvents();
+  }
+});
+
+// Poll for updates every 30 seconds
+setInterval(function() {
+  fetch('/api/events')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const events = data.events || [];
+        const container = document.getElementById('event-cards-container');
+        const currentEventCount = container.querySelectorAll('.event-card').length;
+        if (currentEventCount !== events.length) {
+          loadEvents();
+        }
+      }
+    })
+    .catch(error => console.error('Error checking for updates:', error));
+}, 30000);
+
+// Close modal on click outside
+document.getElementById('certModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeCertificateModal();
+  }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeCertificateModal();
+  }
+});
+</script>
+</body>
+</html>

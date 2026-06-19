@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel · GovCert</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', 'Poppins', sans-serif; background: #F7F8FA; color: #1E1E1E; }
+    :root { --primary: #123A78; --gold: #C89A28; --light-gray: #F7F8FA; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    
+    .admin-header { background: var(--primary); color: white; padding: 20px 0; }
+    .admin-header .container { display: flex; justify-content: space-between; align-items: center; }
+    .admin-header h1 { font-size: 24px; font-weight: 700; }
+    .admin-header a { color: white; opacity: 0.8; transition: 0.2s; }
+    .admin-header a:hover { opacity: 1; }
+    
+    .admin-content { padding: 40px 0; }
+    .section-group { background: white; border-radius: 20px; padding: 24px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .section-group h2 { font-size: 20px; font-weight: 600; color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid var(--light-gray); padding-bottom: 12px; }
+    .section-group h2 i { color: var(--gold); margin-right: 8px; }
+    
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-weight: 500; margin-bottom: 4px; font-size: 14px; color: #555; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; transition: 0.2s; font-family: inherit; }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); outline: none; }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    
+    .btn-save { background: var(--primary); color: white; padding: 12px 32px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; }
+    .btn-save:hover { background: #0e2f62; transform: scale(1.02); }
+    .btn-save i { margin-right: 8px; }
+    
+    .btn-reset { background: #e74c3c; color: white; padding: 12px 32px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; margin-left: 10px; }
+    .btn-reset:hover { background: #c0392b; }
+    
+    .toast { position: fixed; bottom: 30px; right: 30px; background: #27ae60; color: white; padding: 16px 24px; border-radius: 12px; font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: none; z-index: 999; }
+    .toast.show { display: block; animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+    
+    .back-link { display: inline-block; margin-top: 20px; color: var(--primary); font-weight: 500; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="admin-header">
+  <div class="container">
+    <h1><i class="fas fa-cog"></i> Admin Panel · Content Manager</h1>
+    <a href="/"><i class="fas fa-arrow-left"></i> Back to Site</a>
+  </div>
+</div>
+
+<div class="admin-content">
+  <div class="container">
+    <div class="section-group">
+      <h2><i class="fas fa-bullhorn"></i> Hero Banner</h2>
+      <div class="form-group">
+        <label>Hero Description</label>
+        <textarea id="hero-desc" rows="2">Register for events, manage participants, generate secure certificates, verify certificates online, and track attendance from one platform.</textarea>
+      </div>
+    </div>
+
+    <div class="section-group">
+      <h2><i class="fas fa-calendar-alt"></i> Upcoming Events</h2>
+      <div class="form-group">
+        <label>Section Subtitle</label>
+        <input id="events-sub" value="Join our upcoming events and earn digital certificates." />
+      </div>
+      <div class="grid-2">
+        <div><label>Event 1 Title</label><input id="event1-title" value="Digital Governance Summit" /></div>
+        <div><label>Event 2 Title</label><input id="event2-title" value="Blockchain & Trust" /></div>
+        <div><label>Event 3 Title</label><input id="event3-title" value="GovTech Innovation" /></div>
+      </div>
+    </div>
+
+    <div class="section-group">
+      <h2><i class="fas fa-chart-line"></i> Statistics</h2>
+      <div class="form-group">
+        <label>Section Subtitle</label>
+        <input id="stats-sub" value="Real-time statistics from our platform." />
+      </div>
+      <div class="grid-2">
+        <div><label>Stat 1 Label</label><input id="stat1-label" value="Total Events" /></div>
+        <div><label>Stat 2 Label</label><input id="stat2-label" value="Participants" /></div>
+        <div><label>Stat 3 Label</label><input id="stat3-label" value="Certificates Issued" /></div>
+        <div><label>Stat 4 Label</label><input id="stat4-label" value="Verified Certificates" /></div>
+        <div><label>Stat 5 Label</label><input id="stat5-label" value="Organizations" /></div>
+      </div>
+    </div>
+
+    <div class="section-group">
+      <h2><i class="fas fa-star"></i> Services</h2>
+      <div class="form-group">
+        <label>Section Subtitle</label>
+        <input id="services-sub" value="Everything you need to manage events and issue trusted digital certificates." />
+      </div>
+      <div class="grid-2">
+        <div><label>Service 1 Title</label><input id="service1-title" value="Event Registration" /></div>
+        <div><label>Service 1 Description</label><input id="service1-desc" value="Seamless registration with real-time confirmation." /></div>
+        <div><label>Service 2 Title</label><input id="service2-title" value="Certificate Generation" /></div>
+        <div><label>Service 2 Description</label><input id="service2-desc" value="Generate PDF certificates instantly with blockchain hash." /></div>
+        <div><label>Service 3 Title</label><input id="service5-title" value="Attendance Tracking" /></div>
+        <div><label>Service 3 Description</label><input id="service5-desc" value="Monitor attendance with live data." /></div>
+        <div><label>Service 4 Title</label><input id="service6-title" value="Real-time Dashboard" /></div>
+        <div><label>Service 4 Description</label><input id="service6-desc" value="Analytics and insights at a glance." /></div>
+      </div>
+    </div>
+
+    <div class="section-group">
+      <h2><i class="fas fa-certificate"></i> Certificate Preview</h2>
+      <div class="form-group">
+        <label>Section Subtitle</label>
+        <input id="cert-sub" value="See how your digital certificates will look." />
+      </div>
+      <div class="grid-2">
+        <div><label>Certificate Title</label><input id="cert-title" value="Certificate of Achievement" /></div>
+        <div><label>Certificate Issuer Text</label><input id="cert-issuer" value="Issued by GovCert · Verified with Blockchain" /></div>
+      </div>
+    </div>
+
+    <div class="section-group">
+      <h2><i class="fas fa-arrow-right"></i> How It Works</h2>
+      <div class="form-group">
+        <label>Section Subtitle</label>
+        <input id="how-sub" value="Simple steps to get your digital certificate." />
+      </div>
+      <div class="grid-2">
+        <div><label>Step 1</label><input id="step1" value="Register" /></div>
+        <div><label>Step 2</label><input id="step2" value="Attend Event" /></div>
+        <div><label>Step 3</label><input id="step3" value="Verification" /></div>
+        <div><label>Step 4</label><input id="step4" value="Receive Certificate" /></div>
+        <div><label>Step 5</label><input id="step5" value="Download PDF" /></div>
+      </div>
+    </div>
+
+    <div class="section-group">
+      <h2><i class="fas fa-bullhorn"></i> Call to Action</h2>
+      <div class="grid-2">
+        <div><label>CTA Title</label><input id="cta-title" value="Ready to organize your next event?" /></div>
+        <div><label>CTA Subtitle</label><input id="cta-sub" value="Join thousands of organizations using GovCert." /></div>
+      </div>
+    </div>
+
+    <div class="section-group">
+      <h2><i class="fas fa-footer"></i> Footer</h2>
+      <div class="grid-2">
+        <div><label>Footer Description</label><input id="footer-desc" value="Official Event & Certificate Management System" /></div>
+        <div><label>Email</label><input id="footer-email" value="support@govcert.io" /></div>
+        <div><label>Phone</label><input id="footer-phone" value="+1 202 555 0199" /></div>
+        <div><label>Copyright Text</label><input id="footer-copyright" value="© 2025 GovCert. All rights reserved. Privacy Policy · Terms of Service" /></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
+      <button class="btn-save" onclick="saveChanges()"><i class="fas fa-save"></i> Save All Changes</button>
+      <button class="btn-reset" onclick="resetToDefault()"><i class="fas fa-undo"></i> Reset to Default</button>
+    </div>
+    <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Homepage</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> Changes saved successfully!</div>
+
+<script>
+function saveChanges() {
+  const fields = document.querySelectorAll('input, textarea');
+  fields.forEach(field => {
+    const id = field.id;
+    const value = field.value;
+    if (id) {
+      localStorage.setItem('govcert_' + id, value);
+    }
+  });
+  showToast('✅ Changes saved successfully!');
+}
+
+function resetToDefault() {
+  if (confirm('Reset all content to default values?')) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Load saved data
+document.addEventListener('DOMContentLoaded', function() {
+  const fields = document.querySelectorAll('input, textarea');
+  fields.forEach(field => {
+    const id = field.id;
+    if (id) {
+      const saved = localStorage.getItem('govcert_' + id);
+      if (saved !== null) {
+        field.value = saved;
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>
