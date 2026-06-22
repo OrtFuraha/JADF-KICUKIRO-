@@ -3,7 +3,7 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
 const fs = require('fs');
 
@@ -76,6 +76,7 @@ async function initializeDatabase() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         event_id INTEGER,
+        certificate_path TEXT,
         certificate_data TEXT,
         issued_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         downloaded_at DATETIME,
@@ -243,29 +244,6 @@ app.get('/api/users', async (req, res) => {
     res.json({ success: true, users });
   } catch (error) {
     console.error('Users list error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Get user by ID
-app.get('/api/users/:id', async (req, res) => {
-  try {
-    if (!req.session.user || req.session.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
-
-    const user = await db.get(`
-      SELECT id, email, phone, full_name, district, sector, village, cell, organization, role
-      FROM users WHERE id = ?
-    `, [req.params.id]);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({ success: true, user });
-  } catch (error) {
-    console.error('Get user error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -483,23 +461,6 @@ app.post('/api/certificate/download', async (req, res) => {
   }
 });
 
-// Sync users (admin only)
-app.post('/api/sync-users', async (req, res) => {
-  try {
-    if (!req.session.user || req.session.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Admin access required' });
-    }
-
-    res.json({ 
-      success: true, 
-      message: 'Sync completed. Users from Google Sheets have been updated.' 
-    });
-  } catch (error) {
-    console.error('Sync error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
 // Check session
 app.get('/api/session', async (req, res) => {
   if (req.session.user) {
@@ -541,8 +502,10 @@ async function startServer() {
       console.log('║   👤 User Login: http://localhost:' + PORT + '/login.html ║');
       console.log('║                                                       ║');
       console.log('║   📧 Admin Login: admin@govcert.io / admin123        ║');
+      console.log('║   📧 User Login: johnhakiza77@gmail.com / 0788628401 ║');
       console.log('║                                                       ║');
       console.log('║   💾 Database: SQLite (./data/govcert.db)            ║');
+      console.log('║   📄 Certificate Generation: Browser-based           ║');
       console.log('║                                                       ║');
       console.log('║   Press Ctrl+C to stop the server                    ║');
       console.log('║                                                       ║');

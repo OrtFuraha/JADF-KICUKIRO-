@@ -1,0 +1,9 @@
+{
+  "data_sources": [
+    "schools.csv",
+    "villages.csv", 
+    "roads.csv"
+  ],
+  "last_updated": "2024-01-01",
+  "data_types": ["csv", "shp", "geojson"]
+}

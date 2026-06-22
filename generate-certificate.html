@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certificate Generator</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      margin: 0; 
+      padding: 0; 
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .certificate-wrapper {
+      background: white;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .certificate {
+      width: 297mm;
+      height: 210mm;
+      position: relative;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    
+    .certificate-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+    
+    .certificate-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      padding: 25mm 25mm 20mm 25mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Top Logo Section */
+    .logo-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 10mm;
+      padding: 0 5mm;
+    }
+    
+    .logo-left, .logo-right {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .logo-left img, .logo-right img {
+      max-height: 50px;
+      width: auto;
+      object-fit: contain;
+    }
+    
+    .logo-left .logo-text, .logo-right .logo-text {
+      font-family: 'Times New Roman', serif;
+      font-size: 10px;
+      color: #123A78;
+      font-weight: 600;
+      margin-top: 2px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    
+    /* Certificate Title */
+    .cert-title {
+      font-family: 'Times New Roman', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: #123A78;
+      text-align: center;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 2mm;
+      margin-top: 5mm;
+    }
+    
+    .cert-subtitle {
+      font-family: 'Times New Roman', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #C89A28;
+      text-align: center;
+      letter-spacing: 2px;
+      margin-bottom: 5mm;
+    }
+    
+    .cert-divider {
+      width: 80mm;
+      height: 2px;
+      background: #C89A28;
+      margin: 0 auto 5mm;
+    }
+    
+    /* Presented To Text */
+    .presented-text {
+      font-family: 'Times New Roman', serif;
+      font-size: 18px;
+      color: #333;
+      text-align: center;
+      margin-bottom: 3mm;
+      font-style: italic;
+    }
+    
+    /* Recipient Name */
+    .recipient-name {
+      font-family: 'Times New Roman', serif;
+      font-size: 38px;
+      font-weight: 700;
+      color: #000000;
+      text-align: center;
+      letter-spacing: 2px;
+      margin-bottom: 5mm;
+      padding: 0 10mm;
+      word-wrap: break-word;
+      max-width: 100%;
+    }
+    
+    /* Message Body */
+    .cert-message {
+      font-family: 'Times New Roman', serif;
+      font-size: 15px;
+      color: #333;
+      text-align: center;
+      line-height: 1.6;
+      max-width: 200mm;
+      margin: 0 auto 4mm;
+    }
+    
+    /* Date */
+    .cert-date {
+      font-family: 'Times New Roman', serif;
+      font-size: 14px;
+      color: #555;
+      text-align: center;
+      margin-bottom: 6mm;
+    }
+    
+    /* Signature Section */
+    .cert-signature {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 160mm;
+      margin-top: 4mm;
+    }
+    
+    .signature-block {
+      text-align: center;
+      flex: 1;
+    }
+    
+    .signature-line {
+      width: 60mm;
+      height: 1px;
+      background: #333;
+      margin: 0 auto 2mm;
+    }
+    
+    .signature-name {
+      font-family: 'Times New Roman', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #123A78;
+    }
+    
+    .signature-title {
+      font-family: 'Times New Roman', serif;
+      font-size: 11px;
+      color: #555;
+    }
+    
+    .stamp-text {
+      font-family: 'Times New Roman', serif;
+      font-size: 12px;
+      color: #555;
+      font-style: italic;
+    }
+    
+    @media print {
+      body { background: white; margin: 0; padding: 0; }
+      .certificate-wrapper { box-shadow: none; border-radius: 0; }
+      .certificate { width: 297mm; height: 210mm; }
+    }
+    
+    @media screen and (max-width: 1100px) {
+      .certificate-wrapper { transform: scale(0.7); transform-origin: top center; }
+    }
+    @media screen and (max-width: 800px) {
+      .certificate-wrapper { transform: scale(0.5); transform-origin: top center; }
+    }
+    @media screen and (max-width: 600px) {
+      .certificate-wrapper { transform: scale(0.35); transform-origin: top center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="certificate-wrapper">
+    <div class="certificate" id="certificate">
+      <!-- Background Image -->
+      <img src="/certificate-background.jpg" alt="Certificate Background" class="certificate-bg" id="certBg" />
+      
+      <!-- Content Overlay -->
+      <div class="certificate-content">
+        <!-- Logos Section -->
+        <div class="logo-section">
+          <div class="logo-left">
+            <img src="/rwanda-logo.png" alt="Republic of Rwanda Logo" />
+            <span class="logo-text">REPUBLIC OF RWANDA</span>
+          </div>
+          <div class="logo-right">
+            <img src="/jadf-logo.png" alt="JADF Logo" />
+            <span class="logo-text">JOINT ACTION DEVELOPMENT FORUM</span>
+          </div>
+        </div>
+        
+        <div class="cert-title">CERTIFICATE OF PARTICIPATION</div>
+        <div class="cert-subtitle">Green Academy 2015-2016</div>
+        <div class="cert-divider"></div>
+        
+        <div class="presented-text">This certificate is proudly presented to</div>
+        <div class="recipient-name" id="recipientName">JEAN PIERRE</div>
+        
+        <div class="cert-message">
+          This certificate is a result of participation in the Green Academy of the Joint Action Development 
+          for the 2015-2016 EU-Funded Project "Green Schools: A New Approach to Sustainable School Buildings".
+          <br /><br />
+          Your contribution and valuable contribution to strengthening community and providing economic 
+          and sustainable development of Education Sector is highly appreciated.
+        </div>
+        
+        <div class="cert-date" id="certDate">Dated: 15th June 2015</div>
+        
+        <div class="cert-signature">
+          <div class="signature-block">
+            <div class="signature-line"></div>
+            <div class="signature-name">MUTSINZI Antoine</div>
+            <div class="signature-title">Kicukiro District Executive Administrator</div>
+          </div>
+          <div class="signature-block">
+            <div class="signature-line"></div>
+            <div class="stamp-text">Authorized Signature &amp; Stamp</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Get parameters from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get('name') || 'JEAN PIERRE';
+    const date = urlParams.get('date') || new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    document.getElementById('recipientName').textContent = name.toUpperCase();
+    document.getElementById('certDate').textContent = 'Dated: ' + date;
+  </script>
+</body>
+</html>

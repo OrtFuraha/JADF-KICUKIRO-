@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -57,6 +56,25 @@
     @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     
     .logout-btn { cursor: pointer; }
+    
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .btn-download:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
     
     @media (max-width: 768px) { .profile-grid { grid-template-columns: 1fr; } }
   </style>
@@ -120,15 +138,15 @@
   <div class="certificate-section">
     <h2><i class="fas fa-certificate"></i> My Certificate</h2>
     <div class="certificate-preview" id="cert-preview">
-      <img src="/certificate.jpg" alt="Certificate" id="cert-image" />
+      <img src="/certificate-background.jpg" alt="Certificate" id="cert-image" />
     </div>
     <div style="text-align:center;">
-      <button class="btn-download" onclick="downloadCertificate()">
+      <button class="btn-download" id="downloadBtn" onclick="downloadCertificate()">
         <i class="fas fa-download"></i> Download Certificate (PDF)
       </button>
     </div>
     <p style="text-align:center;color:#999;font-size:13px;margin-top:12px;">
-      <i class="fas fa-info-circle"></i> Your name will appear on the certificate
+      <i class="fas fa-info-circle"></i> Your name and date will be automatically added
     </p>
   </div>
 </div>
@@ -162,216 +180,231 @@ async function loadUserData() {
   }
 }
 
-// Load user data on page load
-document.addEventListener('DOMContentLoaded', loadUserData);
-
+// Generate certificate - Direct canvas approach
 function downloadCertificate() {
+  const btn = document.getElementById('downloadBtn');
   const toast = document.getElementById('toast');
   const toastMessage = document.getElementById('toast-message');
   
-  toastMessage.textContent = '⏳ Generating your certificate...';
-  toast.classList.add('show');
+  // Disable button and show loading
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating...';
   
   const userName = document.getElementById('user-fullname').textContent || 'JEAN PIERRE';
+  const currentDate = new Date();
+  const dateStr = currentDate.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
   
+  // Load the certificate background image
   const img = new Image();
   img.crossOrigin = 'anonymous';
-  img.src = '/certificate.jpg';
+  img.src = '/certificate-background.jpg';
   
   img.onload = function() {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    const width = 3508;
-    const height = 2480;
-    
-    canvas.width = width;
-    canvas.height = height;
-    
-    ctx.drawImage(img, 0, 0, width, height);
-    
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    const presentedTextY = height * 0.48;
-    ctx.font = 'italic 28px "Times New Roman", serif';
-    ctx.fillStyle = '#2c2c2c';
-    ctx.shadowColor = 'rgba(255,255,255,0.95)';
-    ctx.shadowBlur = 12;
-    ctx.fillText('This certificate is proudly presented to', width/2, presentedTextY);
-    ctx.shadowBlur = 0;
-    
-    const nameY = height * 0.56;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    ctx.font = 'bold 48px "Times New Roman", serif';
-    const metrics = ctx.measureText(userName.toUpperCase());
-    const textWidth = metrics.width;
-    const padding = 50;
-    const textHeight = 65;
-    const x = width / 2;
-    const y = nameY;
-    
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
-    ctx.shadowColor = 'rgba(0,0,0,0.05)';
-    ctx.shadowBlur = 12;
-    const radius = 10;
-    const rectX = x - textWidth/2 - padding;
-    const rectY = y - textHeight/2 - 6;
-    const rectW = textWidth + padding * 2;
-    const rectH = textHeight + 12;
-    ctx.beginPath();
-    ctx.moveTo(rectX + radius, rectY);
-    ctx.lineTo(rectX + rectW - radius, rectY);
-    ctx.quadraticCurveTo(rectX + rectW, rectY, rectX + rectW, rectY + radius);
-    ctx.lineTo(rectX + rectW, rectY + rectH - radius);
-    ctx.quadraticCurveTo(rectX + rectW, rectY + rectH, rectX + rectW - radius, rectY + rectH);
-    ctx.lineTo(rectX + radius, rectY + rectH);
-    ctx.quadraticCurveTo(rectX, rectY + rectH, rectX, rectY + rectH - radius);
-    ctx.lineTo(rectX, rectY + radius);
-    ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
-    ctx.closePath();
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    
-    ctx.font = 'bold 48px "Times New Roman", serif';
-    ctx.fillStyle = '#C89A28';
-    ctx.shadowColor = 'rgba(0,0,0,0.08)';
-    ctx.shadowBlur = 5;
-    ctx.fillText(userName.toUpperCase(), x, y);
-    ctx.shadowBlur = 0;
-    
-    const recognitionY = height * 0.64;
-    ctx.font = '18px "Times New Roman", serif';
-    ctx.fillStyle = '#2c2c2c';
-    ctx.shadowColor = 'rgba(255,255,255,0.9)';
-    ctx.shadowBlur = 8;
-    ctx.fillText('In recognition of his/her active participation in the General Assembly', width/2, recognitionY);
-    ctx.shadowBlur = 0;
-    
-    const forumY = height * 0.68;
-    ctx.font = '18px "Times New Roman", serif';
-    ctx.fillStyle = '#2c2c2c';
-    ctx.fillText('of the Joint Action Development Forum (JADF) of Kicukiro District', width/2, forumY);
-    
-    const heldOnY = height * 0.72;
-    ctx.font = '18px "Times New Roman", serif';
-    ctx.fillStyle = '#2c2c2c';
-    ctx.fillText('held on', width/2 - 50, heldOnY);
-    
-    const currentDate = new Date();
-    const dateStr = currentDate.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    ctx.font = '18px "Times New Roman", serif';
-    ctx.fillStyle = '#123A78';
-    ctx.fillText(dateStr, width/2 + 30, heldOnY);
-    
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4',
-      compress: true,
-      hotfixes: ['px_scaling']
-    });
-    
-    const imgData = canvas.toDataURL('image/png', 1.0);
-    pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
-    pdf.save('Certificate_Participation_' + userName.replace(/\s/g, '_') + '.pdf');
-    
-    fetch('/api/certificate/download', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ event_id: null })
-    }).catch(err => console.error('Failed to record download:', err));
-    
-    toastMessage.textContent = '✅ Certificate downloaded successfully!';
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    try {
+      // Create canvas with A4 landscape dimensions at 300 DPI
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const width = 3508;
+      const height = 2480;
+      canvas.width = width;
+      canvas.height = height;
+      
+      // Draw the certificate background
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      // --- Add name overlay ---
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      // Position for the name - under "This certificate is proudly presented to"
+      const nameY = height * 0.54;
+      ctx.font = 'bold 50px "Times New Roman", serif';
+      const metrics = ctx.measureText(userName.toUpperCase());
+      const textWidth = metrics.width;
+      const padding = 60;
+      const textHeight = 70;
+      const x = width / 2;
+      const y = nameY;
+      
+      // White background for name
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+      ctx.shadowColor = 'rgba(0,0,0,0.05)';
+      ctx.shadowBlur = 10;
+      const radius = 10;
+      const rectX = x - textWidth/2 - padding;
+      const rectY = y - textHeight/2 - 6;
+      const rectW = textWidth + padding * 2;
+      const rectH = textHeight + 12;
+      ctx.beginPath();
+      ctx.moveTo(rectX + radius, rectY);
+      ctx.lineTo(rectX + rectW - radius, rectY);
+      ctx.quadraticCurveTo(rectX + rectW, rectY, rectX + rectW, rectY + radius);
+      ctx.lineTo(rectX + rectW, rectY + rectH - radius);
+      ctx.quadraticCurveTo(rectX + rectW, rectY + rectH, rectX + rectW - radius, rectY + rectH);
+      ctx.lineTo(rectX + radius, rectY + rectH);
+      ctx.quadraticCurveTo(rectX, rectY + rectH, rectX, rectY + rectH - radius);
+      ctx.lineTo(rectX, rectY + radius);
+      ctx.quadraticCurveTo(rectX, rectY, rectX + radius, rectY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      // Draw the name in BLACK
+      ctx.font = 'bold 50px "Times New Roman", serif';
+      ctx.fillStyle = '#000000';
+      ctx.shadowColor = 'rgba(0,0,0,0.03)';
+      ctx.shadowBlur = 3;
+      ctx.fillText(userName.toUpperCase(), x, y);
+      ctx.shadowBlur = 0;
+      
+      // --- Add date overlay ---
+      const dateY = height * 0.87;
+      
+      // Draw a solid white rectangle to cover the slashes      ctx.fillStyle = '#FFFFFF';
+      ctx.shadowColor = 'rgba(0,0,0,0)';
+      ctx.shadowBlur = 0;
+      
+      const rectW2 = 600;
+      const rectH2 = 50;
+      const rectX2 = (width / 2) - (rectW2 / 2);
+      const rectY2 = dateY - (rectH2 / 2);
+      ctx.fillRect(rectX2, rectY2, rectW2, rectH2);
+      
+      // Draw the date
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '22px "Times New Roman", serif';
+      ctx.fillStyle = '#222222';
+      ctx.shadowColor = 'rgba(0,0,0,0.03)';
+      ctx.shadowBlur = 3;
+      ctx.fillText(dateStr, width / 2, dateY);
+      ctx.shadowBlur = 0;
+      
+      // Generate PDF
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+      pdf.save('Certificate_Participation_' + userName.replace(/\s/g, '_') + '.pdf');
+      
+      // Record download
+      fetch('/api/certificate/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_id: null })
+      }).catch(err => console.error('Failed to record download:', err));
+      
+      // Show success
+      toastMessage.textContent = '✅ Certificate downloaded successfully!';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+      
+    } catch (error) {
+      console.error('Generation error:', error);
+      toastMessage.textContent = '❌ Error generating certificate. Please try again.';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    } finally {
+      // Re-enable button
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-download"></i> Download Certificate (PDF)';
+    }
   };
   
   img.onerror = function() {
-    toastMessage.textContent = '⚠️ Generating fallback certificate...';
-    
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4',
-      compress: true
-    });
-    
-    pdf.setFillColor(245, 240, 232);
-    pdf.rect(0, 0, 297, 210, 'F');
-    
-    pdf.setDrawColor(200, 154, 40);
-    pdf.setLineWidth(2);
-    pdf.rect(10, 10, 277, 190);
-    pdf.setDrawColor(18, 58, 120);
-    pdf.setLineWidth(1);
-    pdf.rect(15, 15, 267, 180);
-    
-    pdf.setFont('times', 'bold');
-    pdf.setFontSize(32);
-    pdf.setTextColor(18, 58, 120);
-    pdf.text('CERTIFICATE', 148.5, 35, { align: 'center' });
-    pdf.setFontSize(28);
-    pdf.setTextColor(200, 154, 40);
-    pdf.text('OF PARTICIPATION', 148.5, 50, { align: 'center' });
-    
-    pdf.setDrawColor(200, 154, 40);
-    pdf.setLineWidth(1);
-    pdf.line(120, 57, 177, 57);
-    
-    pdf.setFont('times', 'italic');
-    pdf.setFontSize(18);
-    pdf.setTextColor(44, 44, 44);
-    pdf.text('This certificate is proudly presented to', 148.5, 75, { align: 'center' });
-    
-    pdf.setFont('times', 'bold');
-    pdf.setFontSize(36);
-    pdf.setTextColor(200, 154, 40);
-    pdf.text(userName.toUpperCase(), 148.5, 95, { align: 'center' });
-    
-    pdf.setFont('times', 'normal');
-    pdf.setFontSize(14);
-    pdf.setTextColor(44, 44, 44);
-    pdf.text('In recognition of his/her active participation in the General Assembly', 148.5, 120, { align: 'center' });
-    pdf.text('of the Joint Action Development Forum (JADF) of Kicukiro District,', 148.5, 133, { align: 'center' });
-    
-    const currentDate = new Date();
-    const dateStr = currentDate.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    pdf.text('held on ' + dateStr, 148.5, 150, { align: 'center' });
-    
-    pdf.setFontSize(12);
-    pdf.setTextColor(51, 51, 51);
-    pdf.text('Your commitment and valuable contribution to strengthening partnership', 148.5, 170, { align: 'center' });
-    pdf.text('and promoting inclusive and sustainable development in Kicukiro District', 148.5, 180, { align: 'center' });
-    pdf.text('are highly appreciated.', 148.5, 190, { align: 'center' });
-    
-    pdf.setFont('times', 'bold');
-    pdf.setFontSize(12);
-    pdf.setTextColor(18, 58, 120);
-    pdf.text('Chairperson of JADF – Kicukiro District', 80, 200, { align: 'center' });
-    pdf.text('District Executive Administrator', 220, 200, { align: 'center' });
-    pdf.setFont('times', 'normal');
-    pdf.setFontSize(10);
-    pdf.setTextColor(85, 85, 85);
-    pdf.text('Kicukiro District', 220, 207, { align: 'center' });
-    
-    pdf.save('Certificate_Participation_' + userName.replace(/\s/g, '_') + '.pdf');
-    
-    toastMessage.textContent = '✅ Certificate downloaded successfully!';
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    // Fallback: Simple certificate
+    try {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+      
+      pdf.setFillColor(245, 240, 232);
+      pdf.rect(0, 0, 297, 210, 'F');
+      pdf.setDrawColor(200, 154, 40);
+      pdf.setLineWidth(2);
+      pdf.rect(10, 10, 277, 190);
+      pdf.setDrawColor(18, 58, 120);
+      pdf.setLineWidth(1);
+      pdf.rect(15, 15, 267, 180);
+      
+      pdf.setFont('times', 'bold');
+      pdf.setFontSize(32);
+      pdf.setTextColor(18, 58, 120);
+      pdf.text('CERTIFICATE', 148.5, 40, { align: 'center' });
+      pdf.setFontSize(28);
+      pdf.setTextColor(200, 154, 40);
+      pdf.text('OF PARTICIPATION', 148.5, 55, { align: 'center' });
+      
+      pdf.setDrawColor(200, 154, 40);
+      pdf.setLineWidth(1);
+      pdf.line(120, 62, 177, 62);
+      
+      pdf.setFont('times', 'italic');
+      pdf.setFontSize(18);
+      pdf.setTextColor(44, 44, 44);
+      pdf.text('This certificate is proudly presented to', 148.5, 80, { align: 'center' });
+      
+      pdf.setFont('times', 'bold');
+      pdf.setFontSize(36);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(userName.toUpperCase(), 148.5, 100, { align: 'center' });
+      
+      pdf.setFont('times', 'normal');
+      pdf.setFontSize(14);
+      pdf.setTextColor(44, 44, 44);
+      pdf.text('In recognition of your active participation in', 148.5, 125, { align: 'center' });
+      pdf.text('tremendous activities in Kicukiro District in the fiscal year 2025/2026;', 148.5, 138, { align: 'center' });
+      pdf.text('Your commitment and valuable contribution to strengthening partnership', 148.5, 155, { align: 'center' });
+      pdf.text('and promoting inclusive and sustainable development in Kicukiro District', 148.5, 168, { align: 'center' });
+      pdf.text('are highly appreciated.', 148.5, 181, { align: 'center' });
+      
+      pdf.setFontSize(14);
+      pdf.setTextColor(85, 85, 85);
+      pdf.text('Issued at Kicukiro, on ' + dateStr, 148.5, 198, { align: 'center' });
+      
+      pdf.setFont('times', 'bold');
+      pdf.setFontSize(14);
+      pdf.setTextColor(18, 58, 120);
+      pdf.text('District Executive Administrator', 148.5, 215, { align: 'center' });
+      pdf.setFont('times', 'normal');
+      pdf.setFontSize(11);
+      pdf.setTextColor(85, 85, 85);
+      pdf.text('Kicukiro District', 148.5, 222, { align: 'center' });
+      
+      pdf.save('Certificate_Participation_' + userName.replace(/\s/g, '_') + '.pdf');
+      
+      toastMessage.textContent = '✅ Certificate downloaded successfully!';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+      
+    } catch (error) {
+      toastMessage.textContent = '❌ Error generating certificate. Please try again.';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-download"></i> Download Certificate (PDF)';
+    }
   };
 }
+
+// Load user data on page load
+document.addEventListener('DOMContentLoaded', loadUserData);
 
 async function logout() {
   try {

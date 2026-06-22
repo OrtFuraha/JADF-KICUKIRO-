@@ -84,17 +84,21 @@
     .cert-modal-content .close-btn { position: absolute; top: 10px; right: 20px; font-size: 36px; cursor: pointer; color: #999; transition: 0.2s; line-height: 1; z-index: 10; }
     .cert-modal-content .close-btn:hover { color: #333; transform: rotate(90deg); }
     .cert-modal-content .cert-image { width: 100%; border-radius: 12px; display: block; }
-    .cert-modal-content .cert-title { text-align: center; color: var(--primary); font-size: 22px; font-weight: 700; font-family: 'Montserrat', sans-serif; margin-bottom: 5px; }
-    .cert-modal-content .cert-subtitle { text-align: center; color: var(--gold); font-size: 16px; font-weight: 600; margin-bottom: 15px; }
 
     .how-it-works { padding: 64px 0; background: white; }
     .timeline { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 40px; max-width: 880px; margin: 0 auto; }
-    .timeline-item { display: flex; align-items: center; gap: 12px; background: var(--light-gray); padding: 12px 28px; border-radius: 100px; border: 1px solid rgba(200,154,40,0.08); font-weight: 500; }
-    .timeline-item .step { background: var(--primary); color: white; width: 32px; height: 32px; border-radius: 40px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+    .timeline-item { display: flex; align-items: center; gap: 12px; background: var(--light-gray); padding: 16px 28px; border-radius: 100px; border: 1px solid rgba(200,154,40,0.08); font-weight: 500; }
+    .timeline-item .step { background: var(--primary); color: white; width: 32px; height: 32px; border-radius: 40px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .timeline-item .step-text { font-size: 14px; }
+    .timeline-item .step-desc { font-size: 12px; color: #666; font-weight: 400; display: block; }
 
-    .partners { padding: 40px 0; background: white; border-top: 1px solid #eef0f5; }
-    .partner-slider { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px 60px; align-items: center; font-weight: 500; color: #5a5a5a; font-size: 18px; }
-    .partner-slider i { font-size: 40px; color: var(--primary); opacity: 0.5; }
+    .jadf-partner { padding: 60px 0; background: linear-gradient(135deg, #f5f0e8 0%, #e8e0d0 50%, #f5f0e8 100%); border-top: 2px solid var(--gold); border-bottom: 2px solid var(--gold); }
+    .jadf-partner .jadf-container { text-align: center; max-width: 600px; margin: 0 auto; }
+    .jadf-partner .jadf-logo { max-width: 250px; height: auto; margin: 0 auto 20px; display: block; border-radius: 16px; box-shadow: 0 8px 32px rgba(18,58,120,0.1); padding: 20px; background: white; }
+    .jadf-partner .jadf-title { font-size: 28px; font-weight: 700; color: var(--primary); font-family: 'Montserrat', sans-serif; letter-spacing: 1px; }
+    .jadf-partner .jadf-subtitle { font-size: 16px; color: #666; margin-top: 8px; font-weight: 500; }
+    .jadf-partner .jadf-divider { width: 80px; height: 3px; background: var(--gold); margin: 16px auto; border-radius: 2px; }
+    .jadf-partner .jadf-desc { font-size: 14px; color: #888; margin-top: 8px; }
 
     .cta-section { background: var(--primary); padding: 64px 0; color: white; text-align: center; }
     .cta-section h2 { font-size: 38px; font-weight: 700; font-family: 'Montserrat', sans-serif; margin-bottom: 12px; }
@@ -137,7 +141,7 @@
       <li><a onclick="scrollToSection('events')">Events</a></li>
       <li><a onclick="scrollToSection('certificates')">Certificates</a></li>
       <li><a onclick="scrollToSection('how-it-works')">How It Works</a></li>
-      <li><a onclick="scrollToSection('partners')">Partners</a></li>
+      <li><a onclick="scrollToSection('jadf')">JADF</a></li>
     </ul>
     <div class="nav-actions">
       <a href="/login.html" class="login"><i class="fas fa-sign-in-alt"></i> Login</a>
@@ -259,9 +263,7 @@
 <div class="cert-modal" id="certModal">
   <div class="cert-modal-content">
     <span class="close-btn" onclick="closeCertificateModal()">&times;</span>
-    <div class="cert-title">CERTIFICATE OF PARTICIPATION</div>
-    <div class="cert-subtitle">JADF 2026 · Joint Action Development Forum</div>
-    <img id="certificate-image" src="/certificate.jpg" alt="Certificate of Participation" class="cert-image" />
+    <img id="certificate-image" src="/certificate-background.jpg" alt="Certificate" class="cert-image" />
   </div>
 </div>
 
@@ -271,23 +273,48 @@
     <h2 class="section-title"><i class="fas fa-arrow-right"></i> How It Works</h2>
     <p class="section-sub" id="how-sub">Simple steps to get your digital certificate.</p>
     <div class="timeline" id="timeline-container">
-      <div class="timeline-item"><span class="step">1</span> <span id="step1">Register</span></div>
-      <div class="timeline-item"><span class="step">2</span> <span id="step2">Attend Event</span></div>
-      <div class="timeline-item"><span class="step">3</span> <span id="step3">Verification</span></div>
-      <div class="timeline-item"><span class="step">4</span> <span id="step4">Receive Certificate</span></div>
-      <div class="timeline-item"><span class="step">5</span> <span id="step5">Download PDF</span></div>
+      <div class="timeline-item">
+        <span class="step">1</span>
+        <div>
+          <span class="step-text" id="step1">Login to Your Account</span>
+          <span class="step-desc">Use your email and phone number as password</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <span class="step">2</span>
+        <div>
+          <span class="step-text" id="step2">Go to User Dashboard</span>
+          <span class="step-desc">Access your personalized dashboard</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <span class="step">3</span>
+        <div>
+          <span class="step-text" id="step3">Click Download Certificate</span>
+          <span class="step-desc">Your name and date will be automatically added</span>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <span class="step">4</span>
+        <div>
+          <span class="step-text" id="step4">Receive Your Certificate</span>
+          <span class="step-desc">PDF with your name and participation details</span>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Partners -->
-<section class="partners" id="partners">
-  <div class="container partner-slider">
-    <span><i class="fas fa-university"></i> Government</span>
-    <span><i class="fas fa-hand-holding-heart"></i> NGOs</span>
-    <span><i class="fas fa-building"></i> Companies</span>
-    <span><i class="fas fa-graduation-cap"></i> Universities</span>
-    <span><i class="fas fa-globe"></i> Global Partners</span>
+<!-- JADF Partner Section -->
+<section class="jadf-partner" id="jadf">
+  <div class="container">
+    <div class="jadf-container">
+      <img src="/jadf-logo.png" alt="JADF Logo" class="jadf-logo" />
+      <div class="jadf-title">Joint Action Development Forum</div>
+      <div class="jadf-divider"></div>
+      <div class="jadf-subtitle">Kicukiro District · Official Partner</div>
+      <div class="jadf-desc">Working together for sustainable development and community empowerment</div>
+    </div>
   </div>
 </section>
 
@@ -389,13 +416,7 @@ function showToast(message) {
 
 // Open certificate modal
 function openCertificateModal() {
-  const savedCert = localStorage.getItem('govcert_certificate');
-  const certImage = document.getElementById('certificate-image');
-  if (savedCert) {
-    certImage.src = savedCert;
-  } else {
-    certImage.src = '/certificate.jpg';
-  }
+  document.getElementById('certificate-image').src = '/certificate-background.jpg';
   document.getElementById('certModal').classList.add('show');
   document.body.style.overflow = 'hidden';
 }
@@ -444,11 +465,10 @@ document.addEventListener('DOMContentLoaded', function() {
   loadContent('cert-title', 'Certificate of Participation');
   loadContent('cert-issuer', 'JADF 2026 · Joint Action Development Forum');
   loadContent('how-sub', 'Simple steps to get your digital certificate.');
-  loadContent('step1', 'Register');
-  loadContent('step2', 'Attend Event');
-  loadContent('step3', 'Verification');
-  loadContent('step4', 'Receive Certificate');
-  loadContent('step5', 'Download PDF');
+  loadContent('step1', 'Login to Your Account');
+  loadContent('step2', 'Go to User Dashboard');
+  loadContent('step3', 'Click Download Certificate');
+  loadContent('step4', 'Receive Your Certificate');
   loadContent('cta-title', 'Ready to organize your next event?');
   loadContent('cta-sub', 'Join thousands of organizations using GovCert.');
   loadContent('footer-desc', 'Official Event & Certificate Management System');
