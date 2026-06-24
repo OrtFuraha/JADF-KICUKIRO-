@@ -461,6 +461,23 @@ app.post('/api/certificate/download', async (req, res) => {
   }
 });
 
+// Sync from Google Sheets - Admin endpoint
+app.post('/api/sync-sheets', async (req, res) => {
+  try {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { syncUsersFromSheet } = require('./sync-google-sheet.js');
+    await syncUsersFromSheet();
+
+    res.json({ success: true, message: 'Google Sheets sync completed successfully' });
+  } catch (error) {
+    console.error('Sync error:', error);
+    res.status(500).json({ error: 'Failed to sync with Google Sheets' });
+  }
+});
+
 // Check session
 app.get('/api/session', async (req, res) => {
   if (req.session.user) {
@@ -506,6 +523,7 @@ async function startServer() {
       console.log('║                                                       ║');
       console.log('║   💾 Database: SQLite (./data/govcert.db)            ║');
       console.log('║   📄 Certificate Generation: Browser-based           ║');
+      console.log('║   📊 Google Sheets Sync: Available                   ║');
       console.log('║                                                       ║');
       console.log('║   Press Ctrl+C to stop the server                    ║');
       console.log('║                                                       ║');

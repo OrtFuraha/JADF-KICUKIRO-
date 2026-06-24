@@ -1,0 +1,14 @@
+[2026-06-23T09:56:48.167Z] Starting Google Sheet sync...
+[2026-06-23T09:56:48.200Z] Trying: https://docs.google.com/spreadsheets/d/1BiqmLOwHoNRFUQNNEfRf3eEnT1y58GJttmEcn1z-...
+[2026-06-23T09:56:49.843Z] Following redirect...
+[2026-06-23T09:56:51.110Z] ✅ Data fetched successfully!
+[2026-06-23T09:56:51.113Z] 📋 Headers: No, Full names, Email, Phone number, District, Sector, Cell, Village
+[2026-06-23T09:56:51.113Z] 📊 Found 2 rows of data
+[2026-06-23T09:56:51.113Z] 📋 All data:
+   Row 1: {"No":"1","Full names":"Hakizimana Jean Marie Vianney","Email":"johnhakiza77@gmail.com","Phone number":"0788628401","District":"Kicukiro","Sector":"Kicukiro","Cell":"Kicukiro","Village":"Kicukiro"}
+   Row 2: {"No":"2","Full names":"Bigwibyera Aristide","Email":"bigwibyeraaristide24@gmail.com","Phone number":"0791100954","District":"Kicukiro","Sector":"Kanombe","Cell":"Kabeza","Village":"Nyenyeri"}
+[2026-06-23T09:56:51.157Z] ✅ Updated: Hakizimana Jean Marie Vianney (johnhakiza77@gmail.com)
+[2026-06-23T09:56:51.165Z] ✅ Added: Bigwibyera Aristide (bigwibyeraaristide24@gmail.com) - Password: 0791100954
+[2026-06-23T09:56:51.166Z] ✅ Sync completed!
+[2026-06-23T09:56:51.166Z] 📊 Added: 1, Updated: 1, Skipped: 0
+[2026-06-23T09:56:51.169Z] 📊 Total users in database: 4

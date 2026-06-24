@@ -47,12 +47,12 @@
     
     .btn-add { background: #27ae60; color: white; padding: 10px 24px; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; transition: 0.2s; margin-bottom: 20px; }
     .btn-add:hover { background: #219a52; }
+    .btn-sync { background: #f39c12; color: white; padding: 10px 24px; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; transition: 0.2s; margin-bottom: 20px; margin-left: 10px; }
+    .btn-sync:hover { background: #d68910; }
     .btn-edit { background: #3498db; color: white; padding: 4px 12px; border: none; border-radius: 40px; cursor: pointer; font-size: 12px; transition: 0.2s; margin-right: 4px; }
     .btn-edit:hover { background: #2980b9; }
     .btn-delete { background: #e74c3c; color: white; padding: 4px 12px; border: none; border-radius: 40px; cursor: pointer; font-size: 12px; transition: 0.2s; }
     .btn-delete:hover { background: #c0392b; }
-    .btn-sync { background: #f39c12; color: white; padding: 10px 24px; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; transition: 0.2s; margin-left: 10px; }
-    .btn-sync:hover { background: #d68910; }
     .btn-publish { background: #8e44ad; color: white; padding: 10px 24px; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; transition: 0.2s; margin-left: 10px; }
     .btn-publish:hover { background: #7d3c98; }
     
@@ -132,7 +132,7 @@
       <p style="color:#666;margin-bottom:15px;">Add new users - they will automatically be able to login with their email and phone number as password.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
         <button class="btn-add" onclick="openAddUserModal()"><i class="fas fa-plus"></i> Add New User</button>
-        <button class="btn-sync" onclick="syncUsers()"><i class="fas fa-sync"></i> Sync from Google Sheets</button>
+        <button class="btn-sync" onclick="syncSheets()"><i class="fas fa-sync"></i> Sync from Google Sheets</button>
       </div>
       <input type="text" class="search-box" id="search-users" placeholder="🔍 Search users..." onkeyup="filterUsers()" />
       <div class="table-wrapper">
@@ -512,7 +512,7 @@ async function deleteEvent(id, title) {
   }
 }
 
-// Handle user form submit - automatically sets password as phone number
+// Handle user form submit
 document.getElementById('user-form').addEventListener('submit', async function(e) {
   e.preventDefault();
   const id = document.getElementById('edit-user-id').value;
@@ -524,7 +524,7 @@ document.getElementById('user-form').addEventListener('submit', async function(e
     full_name: fullName,
     email: email,
     phone: phone,
-    password: phone, // Password is automatically set to phone number
+    password: phone,
     district: document.getElementById('user-district').value || 'KICUKIRO',
     sector: document.getElementById('user-sector').value,
     village: document.getElementById('user-village').value,
@@ -628,18 +628,23 @@ function publishEvents() {
   showToast('✅ Events published to homepage and user dashboard');
 }
 
-// Sync users
-async function syncUsers() {
-  showToast('🔄 Syncing from Google Sheets...');
+// Sync users from Google Sheets
+async function syncSheets() {
+  showToast('🔄 Syncing with Google Sheets...');
   try {
-    const response = await fetch('/api/sync-users', { method: 'POST' });
+    const response = await fetch('/api/sync-sheets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
     const data = await response.json();
     if (data.success) {
       showToast('✅ ' + data.message);
       loadUsers();
+    } else {
+      showToast('❌ ' + (data.error || 'Sync failed'));
     }
   } catch (error) {
-    showToast('❌ Error syncing users');
+    showToast('❌ Error syncing with Google Sheets');
   }
 }
 

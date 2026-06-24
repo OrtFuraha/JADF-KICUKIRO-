@@ -1,10 +1,13 @@
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
+const path = require('path');
+
+const DB_PATH = path.join(__dirname, 'data', 'govcert.db');
 
 async function viewUsers() {
   try {
     const db = await open({
-      filename: './data/govcert.db',
+      filename: DB_PATH,
       driver: sqlite3.Database
     });
 
