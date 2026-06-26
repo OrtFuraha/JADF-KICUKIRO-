@@ -80,6 +80,7 @@ async function initializeDatabase() {
         certificate_data TEXT,
         issued_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         downloaded_at DATETIME,
+        download_count INTEGER DEFAULT 0,
         FOREIGN KEY (user_id) REFERENCES users(id),
         FOREIGN KEY (event_id) REFERENCES events(id)
       )
@@ -112,7 +113,8 @@ async function initializeDatabase() {
         { key: 'total_participants', value: 8450 },
         { key: 'certificates_issued', value: 6320 },
         { key: 'verified_certificates', value: 4100 },
-        { key: 'organizations', value: 86 }
+        { key: 'organizations', value: 86 },
+        { key: 'total_downloads', value: 0 }
       ];
       for (const stat of defaultStats) {
         await db.run(`
@@ -224,18 +226,6 @@ app.get('/api/user/profile', async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Ensure institution name is displayed properly
-    if (!user.full_name || user.full_name === '' || !isNaN(user.full_name)) {
-      const email = user.email || '';
-      const domain = email.split('@')[1] || '';
-      const defaultNames = {
-        'gmail.com': 'Gmail User',
-        'yahoo.com': 'Yahoo User',
-        'example.com': 'Example User'
-      };
-      user.full_name = defaultNames[domain] || 'Organization';
     }
 
     res.json({ success: true, user });
@@ -451,34 +441,7 @@ app.post('/api/statistics', async (req, res) => {
   }
 });
 
-// Record certificate download
-app.post('/api/certificate/download', async (req, res) => {
-  try {
-    if (!req.session.user) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-
-    const { event_id } = req.body;
-
-    await db.run(`
-      INSERT INTO certificates (user_id, event_id, downloaded_at)
-      VALUES (?, ?, CURRENT_TIMESTAMP)
-    `, [req.session.user.id, event_id || null]);
-
-    await db.run(`
-      UPDATE statistics 
-      SET stat_value = stat_value + 1, updated_at = CURRENT_TIMESTAMP
-      WHERE stat_key = 'certificates_issued'
-    `);
-
-    res.json({ success: true, message: 'Certificate download recorded' });
-  } catch (error) {
-    console.error('Certificate record error:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Generate certificate API
+// Generate certificate API with download tracking
 app.post('/api/generate-certificate', async (req, res) => {
   try {
     if (!req.session.user) {
@@ -486,6 +449,7 @@ app.post('/api/generate-certificate', async (req, res) => {
     }
 
     const userName = req.session.user.full_name || 'Participant';
+    const userId = req.session.user.id;
     const timestamp = Date.now();
     const fileName = `Certificate_${userName.replace(/\s/g, '_')}_${timestamp}.pdf`;
     const filePath = path.join(__dirname, 'certificates', fileName);
@@ -494,17 +458,48 @@ app.post('/api/generate-certificate', async (req, res) => {
     const { generateCertificateWithPDF } = require('./generate-certificate.js');
     await generateCertificateWithPDF(userName, filePath);
     
-    // Record in database
-    await db.run(`
-      INSERT INTO certificates (user_id, certificate_path, downloaded_at)
-      VALUES (?, ?, CURRENT_TIMESTAMP)
-    `, [req.session.user.id, filePath]);
+    // Check if user already has a certificate
+    const existingCert = await db.get(`
+      SELECT * FROM certificates WHERE user_id = ?
+    `, [userId]);
 
-    await db.run(`
-      UPDATE statistics 
-      SET stat_value = stat_value + 1, updated_at = CURRENT_TIMESTAMP
-      WHERE stat_key = 'certificates_issued'
-    `);
+    if (existingCert) {
+      // Update existing certificate - increment download count
+      await db.run(`
+        UPDATE certificates 
+        SET certificate_path = ?, 
+            downloaded_at = CURRENT_TIMESTAMP,
+            download_count = download_count + 1
+        WHERE user_id = ?
+      `, [filePath, userId]);
+      
+      // Update statistics for downloads
+      await db.run(`
+        UPDATE statistics 
+        SET stat_value = stat_value + 1, updated_at = CURRENT_TIMESTAMP
+        WHERE stat_key = 'total_downloads'
+      `);
+      
+    } else {
+      // Insert new certificate record with download count 1
+      await db.run(`
+        INSERT INTO certificates (user_id, certificate_path, downloaded_at, download_count)
+        VALUES (?, ?, CURRENT_TIMESTAMP, 1)
+      `, [userId, filePath]);
+      
+      // Update statistics for certificates issued and downloads
+      await db.run(`
+        UPDATE statistics 
+        SET stat_value = stat_value + 1, updated_at = CURRENT_TIMESTAMP
+        WHERE stat_key = 'certificates_issued'
+      `);
+      
+      await db.run(`
+        UPDATE statistics 
+        SET stat_value = stat_value + 1, updated_at = CURRENT_TIMESTAMP
+        WHERE stat_key = 'total_downloads'
+      `);
+    }
 
     res.json({
       success: true,
@@ -527,20 +522,85 @@ app.get('/certificates/:filename', (req, res) => {
   }
 });
 
-// Sync from Google Sheets - Admin endpoint
-app.post('/api/sync-sheets', async (req, res) => {
+// Get all certificates with user info (admin only)
+app.get('/api/certificates', async (req, res) => {
   try {
     if (!req.session.user || req.session.user.role !== 'admin') {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
-    const { syncUsersFromSheet } = require('./sync-google-sheet.js');
-    await syncUsersFromSheet();
+    const certificates = await db.all(`
+      SELECT c.*, u.full_name as institution_name, u.email 
+      FROM certificates c
+      JOIN users u ON c.user_id = u.id
+      ORDER BY c.downloaded_at DESC
+    `);
 
-    res.json({ success: true, message: 'Google Sheets sync completed successfully' });
+    res.json({ success: true, certificates });
   } catch (error) {
-    console.error('Sync error:', error);
-    res.status(500).json({ error: 'Failed to sync with Google Sheets' });
+    console.error('Certificates error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get download tracking (admin only)
+app.get('/api/downloads', async (req, res) => {
+  try {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const downloads = await db.all(`
+      SELECT 
+        u.id as user_id,
+        u.full_name as institution_name,
+        u.email,
+        u.district,
+        u.sector,
+        u.cell,
+        u.village,
+        u.phone,
+        CASE WHEN c.id IS NOT NULL THEN 1 ELSE 0 END as downloaded,
+        c.downloaded_at as last_downloaded,
+        COALESCE(c.download_count, 0) as download_count
+      FROM users u
+      LEFT JOIN certificates c ON u.id = c.user_id
+      WHERE u.role = 'user'
+      ORDER BY u.id
+    `);
+
+    res.json({ success: true, downloads });
+  } catch (error) {
+    console.error('Downloads error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get total download count (admin only)
+app.get('/api/total-downloads', async (req, res) => {
+  try {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const result = await db.get(`
+      SELECT stat_value as total FROM statistics WHERE stat_key = 'total_downloads'
+    `);
+    
+    const totalDownloads = result ? result.total : 0;
+    
+    const uniqueResult = await db.get(`
+      SELECT COUNT(DISTINCT user_id) as unique_count FROM certificates
+    `);
+    
+    res.json({ 
+      success: true, 
+      total_downloads: totalDownloads,
+      unique_users: uniqueResult ? uniqueResult.unique_count : 0
+    });
+  } catch (error) {
+    console.error('Total downloads error:', error);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -557,6 +617,23 @@ app.get('/api/session', async (req, res) => {
 app.post('/api/logout', (req, res) => {
   req.session.destroy();
   res.json({ success: true, message: 'Logged out successfully' });
+});
+
+// Sync from Google Sheets - Admin endpoint
+app.post('/api/sync-sheets', async (req, res) => {
+  try {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { syncUsersFromSheet } = require('./sync-google-sheet.js');
+    await syncUsersFromSheet();
+
+    res.json({ success: true, message: 'Google Sheets sync completed successfully' });
+  } catch (error) {
+    console.error('Sync error:', error);
+    res.status(500).json({ error: 'Failed to sync with Google Sheets' });
+  }
 });
 
 // Serve the main page
@@ -585,11 +662,10 @@ async function startServer() {
       console.log('║   👤 User Login: http://localhost:' + PORT + '/login.html ║');
       console.log('║                                                       ║');
       console.log('║   📧 Admin Login: admin@govcert.io / admin123        ║');
-      console.log('║   📧 User Login: etiennetuyishime55@gmail.com / 0785689864 ║');
       console.log('║                                                       ║');
       console.log('║   💾 Database: SQLite (./data/govcert.db)            ║');
       console.log('║   📄 Certificate Generation: PDF-lib                ║');
-      console.log('║   📁 Using: JADF Certificate.pdf                    ║');
+      console.log('║   📊 Download Tracking: Enabled                     ║');
       console.log('║                                                       ║');
       console.log('║   Press Ctrl+C to stop the server                    ║');
       console.log('║                                                       ║');

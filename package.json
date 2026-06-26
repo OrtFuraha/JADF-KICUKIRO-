@@ -9,7 +9,8 @@
     "add-user": "node add-user.js",
     "view-users": "node view-users.js",
     "sync": "node sync-google-sheet.js",
-    "fix-user": "node fix-user.js"
+    "fix-user": "node fix-user.js",
+    "add-column": "node add-download-count.js"
   },
   "dependencies": {
     "express": "^4.18.2",

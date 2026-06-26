@@ -6,18 +6,9 @@ async function generateCertificateWithPDF(userName, outputPath) {
   try {
     console.log(`📄 Generating certificate for: ${userName}`);
     
-    // Get current date
-    const currentDate = new Date();
-    const dateStr = currentDate.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    
     // Load the PDF template
     const pdfPath = path.join(__dirname, 'certificate-template.pdf');
     
-    // Check if PDF exists
     if (!fs.existsSync(pdfPath)) {
       console.log('⚠️ certificate-template.pdf not found, using fallback');
       return generateFallbackCertificate(userName, outputPath);
@@ -26,35 +17,34 @@ async function generateCertificateWithPDF(userName, outputPath) {
     const pdfBytes = fs.readFileSync(pdfPath);
     const pdfDoc = await PDFDocument.load(pdfBytes);
     
-    // Get the first page
     const pages = pdfDoc.getPages();
     const firstPage = pages[0];
-    
-    // Get page dimensions
     const { width, height } = firstPage.getSize();
     
     console.log(`📐 Page: ${width} x ${height} points`);
     
-    // Embed fonts
     const boldFont = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
-    const regularFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
     
-    // --- Position the name in the blank space ---
-    // The blank space is where the name should appear (around 52-55% down)
+    // Position the name in the blank recipient area
+    // The blank area is between "This certificate is proudly presented to" and the body text
+    // This is typically around 45-50% of the page height
+    
     const nameText = userName.toUpperCase();
-    const fontSize = 36;
+    const fontSize = 32;
     const textWidth = boldFont.widthOfTextAtSize(nameText, fontSize);
     const padding = 50;
     const rectWidth = textWidth + padding * 2;
-    const rectHeight = 55;
+    const rectHeight = 50;
     const centerX = width / 2;
     
-    // Position at 53% of page height (adjust as needed)
-    const nameY = height * 0.53;
+    // Position at 46% of page height - in the blank recipient area
+    // This is below the gold divider and above the body text
+    const nameY = height * 0.46;
     const rectX = (width - rectWidth) / 2;
     const rectY = nameY - rectHeight / 2;
     
     console.log(`📍 Placing name at Y: ${nameY} (${Math.round(nameY/height * 100)}% of page)`);
+    console.log(`📍 Name: "${nameText}" with font size: ${fontSize}`);
     
     // Draw white rectangle background for name
     firstPage.drawRectangle({
@@ -69,16 +59,13 @@ async function generateCertificateWithPDF(userName, outputPath) {
     // Draw the name in BLACK
     firstPage.drawText(nameText, {
       x: (width - textWidth) / 2,
-      y: nameY - 14,
+      y: nameY - 12,
       size: fontSize,
       font: boldFont,
       color: rgb(0, 0, 0),
     });
     
-    // Serialize the PDF
     const pdfBytesModified = await pdfDoc.save();
-    
-    // Write to output path
     fs.writeFileSync(outputPath, pdfBytesModified);
     
     console.log(`✅ Certificate generated: ${outputPath}`);
@@ -86,7 +73,6 @@ async function generateCertificateWithPDF(userName, outputPath) {
     
   } catch (error) {
     console.error('❌ Error generating certificate with PDF:', error);
-    console.log('⚠️ Using fallback certificate generation...');
     return generateFallbackCertificate(userName, outputPath);
   }
 }
@@ -115,18 +101,16 @@ async function generateFallbackCertificate(userName, outputPath) {
     ctx.strokeStyle = '#C89A28';
     ctx.lineWidth = 15;
     ctx.strokeRect(50, 50, 3408, 2380);
-    
     ctx.strokeStyle = '#123A78';
     ctx.lineWidth = 3;
     ctx.strokeRect(70, 70, 3368, 2340);
     
-    // Republic of Rwanda text
+    // Republic of Rwanda
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = 'bold 36px "Times New Roman", serif';
     ctx.fillStyle = '#123A78';
     ctx.fillText('REPUBLIC OF RWANDA', 1754, 120);
-    
     ctx.font = '28px "Times New Roman", serif';
     ctx.fillStyle = '#333';
     ctx.fillText('KIGALI CITY', 1754, 170);
@@ -136,13 +120,11 @@ async function generateFallbackCertificate(userName, outputPath) {
     ctx.font = 'bold 72px "Times New Roman", serif';
     ctx.fillStyle = '#123A78';
     ctx.fillText('CERTIFICATE', 1754, 350);
-    
-    // Subtitle
     ctx.font = 'bold 48px "Times New Roman", serif';
     ctx.fillStyle = '#C89A28';
     ctx.fillText('OF APPRECIATION', 1754, 430);
     
-    // Gold line
+    // Gold divider
     ctx.strokeStyle = '#C89A28';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -155,13 +137,13 @@ async function generateFallbackCertificate(userName, outputPath) {
     ctx.fillStyle = '#333';
     ctx.fillText('This certificate is proudly presented to', 1754, 560);
     
-    // Name - positioned in the blank space
+    // Name - positioned in the blank recipient area (46% down)
     const nameY = 640;
-    ctx.font = 'bold 44px "Times New Roman", serif';
+    ctx.font = 'bold 40px "Times New Roman", serif';
     const metrics = ctx.measureText(userName.toUpperCase());
     const textWidth = metrics.width;
     const padding = 50;
-    const textHeight = 55;
+    const textHeight = 50;
     const x = 1754;
     const y = nameY;
     
@@ -174,11 +156,11 @@ async function generateFallbackCertificate(userName, outputPath) {
     ctx.fillRect(rectX, rectY, rectW, rectH);
     
     // Name in BLACK
-    ctx.font = 'bold 44px "Times New Roman", serif';
+    ctx.font = 'bold 40px "Times New Roman", serif';
     ctx.fillStyle = '#000000';
     ctx.fillText(userName.toUpperCase(), x, y);
     
-    // Message
+    // Body text - positioned below the name with proper spacing
     ctx.font = '26px "Times New Roman", serif';
     ctx.fillStyle = '#333';
     ctx.fillText('In recognition of your active participation in', 1754, 820);

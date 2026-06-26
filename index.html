@@ -100,12 +100,20 @@
     .jadf-partner .jadf-divider { width: 80px; height: 3px; background: var(--gold); margin: 16px auto; border-radius: 2px; }
     .jadf-partner .jadf-desc { font-size: 14px; color: #888; margin-top: 8px; }
 
-    .cta-section { background: var(--primary); padding: 64px 0; color: white; text-align: center; }
-    .cta-section h2 { font-size: 38px; font-weight: 700; font-family: 'Montserrat', sans-serif; margin-bottom: 12px; }
-    .cta-section .btn-gold { background: var(--gold); color: var(--dark); margin: 8px; }
-    .cta-section .btn-gold:hover { background: #b68a22; color: white; }
-    .cta-section .btn-secondary { border-color: white; color: white; }
-    .cta-section .btn-secondary:hover { background: white; color: var(--primary); }
+    /* Department Services Section */
+    .department-services { background: var(--primary); padding: 64px 0; color: white; }
+    .department-services h2 { font-size: 38px; font-weight: 700; font-family: 'Montserrat', sans-serif; text-align: center; margin-bottom: 12px; color: white; }
+    .department-services .sub-title { text-align: center; font-size: 18px; color: rgba(255,255,255,0.8); margin-bottom: 40px; }
+    .services-grid-dept { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; }
+    .dept-service-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 24px 20px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+    .dept-service-card:hover { transform: translateY(-6px); background: rgba(255,255,255,0.15); }
+    .dept-service-card i { font-size: 36px; color: var(--gold); margin-bottom: 12px; display: block; }
+    .dept-service-card h4 { font-size: 18px; font-weight: 600; margin-bottom: 6px; color: white; }
+    .dept-service-card p { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.4; }
+
+    .cta-section { background: var(--primary); padding: 40px 0; color: white; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); }
+    .cta-section .developed-by { font-size: 14px; color: rgba(255,255,255,0.6); letter-spacing: 1px; }
+    .cta-section .developed-by strong { color: var(--gold); font-weight: 600; }
 
     footer { background: #0f2a5a; color: #d0d9e8; padding: 40px 0 24px; }
     footer .container { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; }
@@ -126,8 +134,8 @@
     .toast.show { display: block; animation: slideUp 0.3s ease; }
     @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    @media (max-width: 1024px) { .hero-grid { grid-template-columns: 1fr; } .services-grid { grid-template-columns: 1fr 1fr; } .event-cards { grid-template-columns: 1fr 1fr; } footer .container { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 768px) { .nav-links { display: none; } .services-grid { grid-template-columns: 1fr; } .event-cards { grid-template-columns: 1fr; } .hero h1 { font-size: 36px; } footer .container { grid-template-columns: 1fr; } }
+    @media (max-width: 1024px) { .hero-grid { grid-template-columns: 1fr; } .services-grid { grid-template-columns: 1fr 1fr; } .event-cards { grid-template-columns: 1fr 1fr; } .services-grid-dept { grid-template-columns: 1fr 1fr; } footer .container { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 768px) { .nav-links { display: none; } .services-grid { grid-template-columns: 1fr; } .event-cards { grid-template-columns: 1fr; } .services-grid-dept { grid-template-columns: 1fr; } .hero h1 { font-size: 36px; } footer .container { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -251,21 +259,13 @@
     <p class="section-sub" id="cert-sub">See how your digital certificates will look.</p>
     <div class="cert-preview glass-card floating">
       <div class="cert-icon"><i class="fas fa-award"></i><i class="fas fa-qrcode"></i><i class="fas fa-pen-fancy"></i></div>
-      <h3 id="cert-title">Certificate of Participation</h3>
+      <h3 id="cert-title">Certificate of Appreciation</h3>
       <div class="gold-stripe"></div>
       <p id="cert-issuer" style="color:#1E1E1E;font-weight:500;">JADF 2026 · Joint Action Development Forum</p>
-      <a onclick="openCertificateModal()" class="btn-gold" style="margin-top:24px;cursor:pointer;"><i class="fas fa-eye"></i> View Certificate</a>
+      <a onclick="window.location.href='/login.html'" class="btn-gold" style="margin-top:24px;cursor:pointer;"><i class="fas fa-eye"></i> View Certificate</a>
     </div>
   </div>
 </section>
-
-<!-- Certificate Modal -->
-<div class="cert-modal" id="certModal">
-  <div class="cert-modal-content">
-    <span class="close-btn" onclick="closeCertificateModal()">&times;</span>
-    <img id="certificate-image" src="/certificate-background.jpg" alt="Certificate" class="cert-image" />
-  </div>
-</div>
 
 <!-- How It Works -->
 <section class="how-it-works" id="how-it-works">
@@ -291,7 +291,7 @@
         <span class="step">3</span>
         <div>
           <span class="step-text" id="step3">Click Download Certificate</span>
-          <span class="step-desc">Your name and date will be automatically added</span>
+          <span class="step-desc">Your name will be automatically added</span>
         </div>
       </div>
       <div class="timeline-item">
@@ -318,14 +318,56 @@
   </div>
 </section>
 
-<!-- CTA -->
-<section class="cta-section" id="cta">
+<!-- Department Services Section -->
+<section class="department-services">
   <div class="container">
-    <h2 id="cta-title">Ready to organize your next event?</h2>
-    <p id="cta-sub" style="font-size:18px;margin-bottom:20px;">Join thousands of organizations using GovCert.</p>
-    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
-      <a onclick="showToast('📅 Create Event form opened')" class="btn-gold" style="cursor:pointer;"><i class="fas fa-plus-circle"></i> Create Event</a>
-      <a onclick="showToast('📧 Contact form opened')" class="btn-secondary" style="cursor:pointer;border-color:white;color:white;"><i class="fas fa-envelope"></i> Contact Us</a>
+    <h2>Kicukiro District Services</h2>
+    <p class="sub-title">Committed to serving the community through excellence and innovation</p>
+    <div class="services-grid-dept">
+      <div class="dept-service-card">
+        <i class="fas fa-landmark"></i>
+        <h4>Land</h4>
+        <p>Land administration, management, and sustainable development planning</p>
+      </div>
+      <div class="dept-service-card">
+        <i class="fas fa-building"></i>
+        <h4>Inspection</h4>
+        <p>Building inspection, urban planning, and construction compliance</p>
+      </div>
+      <div class="dept-service-card">
+        <i class="fas fa-heartbeat"></i>
+        <h4>Social & Health</h4>
+        <p>Social welfare programs and public health services for all residents</p>
+      </div>
+      <div class="dept-service-card">
+        <i class="fas fa-graduation-cap"></i>
+        <h4>Education</h4>
+        <p>Quality education services and community learning initiatives</p>
+      </div>
+      <div class="dept-service-card">
+        <i class="fas fa-balance-scale"></i>
+        <h4>Good Governance</h4>
+        <p>Transparent and accountable public service delivery</p>
+      </div>
+      <div class="dept-service-card">
+        <i class="fas fa-chart-pie"></i>
+        <h4>Economic Development</h4>
+        <p>Economic growth, job creation, and business development support</p>
+      </div>
+      <div class="dept-service-card">
+        <i class="fas fa-laptop-code"></i>
+        <h4>IT & Innovation</h4>
+        <p>Digital transformation, e-services, and technological innovation</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Footer -->
+<section class="cta-section">
+  <div class="container">
+    <div class="developed-by">
+      Developed By <strong>IT Department</strong> · Kicukiro District
     </div>
   </div>
 </section>
@@ -414,18 +456,6 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-// Open certificate modal
-function openCertificateModal() {
-  document.getElementById('certificate-image').src = '/certificate-background.jpg';
-  document.getElementById('certModal').classList.add('show');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeCertificateModal() {
-  document.getElementById('certModal').classList.remove('show');
-  document.body.style.overflow = 'auto';
-}
-
 // Load saved content from localStorage
 document.addEventListener('DOMContentLoaded', function() {
   function loadContent(elementId, defaultValue) {
@@ -462,15 +492,13 @@ document.addEventListener('DOMContentLoaded', function() {
   loadContent('service10-title', 'Accountability & Collaboration');
   loadContent('service10-desc', 'Promoting accountability and collaboration among development partners.');
   loadContent('cert-sub', 'See how your digital certificates will look.');
-  loadContent('cert-title', 'Certificate of Participation');
+  loadContent('cert-title', 'Certificate of Appreciation');
   loadContent('cert-issuer', 'JADF 2026 · Joint Action Development Forum');
   loadContent('how-sub', 'Simple steps to get your digital certificate.');
   loadContent('step1', 'Login to Your Account');
   loadContent('step2', 'Go to User Dashboard');
   loadContent('step3', 'Click Download Certificate');
   loadContent('step4', 'Receive Your Certificate');
-  loadContent('cta-title', 'Ready to organize your next event?');
-  loadContent('cta-sub', 'Join thousands of organizations using GovCert.');
   loadContent('footer-desc', 'Official Event & Certificate Management System');
   loadContent('footer-email', 'support@govcert.io');
   loadContent('footer-phone', '+1 202 555 0199');
@@ -503,20 +531,6 @@ setInterval(function() {
     })
     .catch(error => console.error('Error checking for updates:', error));
 }, 30000);
-
-// Close modal on click outside
-document.getElementById('certModal').addEventListener('click', function(e) {
-  if (e.target === this) {
-    closeCertificateModal();
-  }
-});
-
-// Close modal on Escape key
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    closeCertificateModal();
-  }
-});
 </script>
 </body>
 </html>

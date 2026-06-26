@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', 'Poppins', sans-serif; background: #F7F8FA; color: #1E1E1E; }
@@ -36,16 +35,19 @@
     .profile-field label { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
     .profile-field .value { font-size: 18px; font-weight: 600; color: var(--primary); margin-top: 4px; }
     
-    .certificate-section { background: white; border-radius: 24px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    .certificate-section { background: white; border-radius: 24px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); margin-top: 24px; text-align: center; }
     .certificate-section h2 { font-size: 24px; font-weight: 700; margin-bottom: 20px; font-family: 'Montserrat', sans-serif; }
     .certificate-section h2 i { color: var(--gold); margin-right: 8px; }
     
-    .certificate-preview { max-width: 600px; margin: 0 auto 24px; border: 2px solid var(--light-gold); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
-    .certificate-preview img { width: 100%; display: block; }
-    
-    .btn-download { background: var(--primary); color: white; padding: 14px 40px; border: none; border-radius: 60px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 10px; }
+    .btn-download { background: var(--primary); color: white; padding: 18px 50px; border: none; border-radius: 60px; font-size: 18px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 12px; }
     .btn-download:hover { background: #0e2f62; transform: scale(1.02); box-shadow: 0 8px 24px rgba(18,58,120,0.3); }
-    .btn-download i { font-size: 18px; }
+    .btn-download i { font-size: 20px; }
+    
+    .btn-download:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none !important;
+    }
     
     .appreciation-message { background: linear-gradient(135deg, #f5f0e8, #e8e0d0); padding: 20px 24px; border-radius: 16px; border-left: 4px solid var(--gold); margin-top: 20px; }
     .appreciation-message p { font-size: 16px; color: #333; line-height: 1.6; font-style: italic; }
@@ -59,8 +61,8 @@
     
     .spinner {
       display: inline-block;
-      width: 20px;
-      height: 20px;
+      width: 24px;
+      height: 24px;
       border: 3px solid rgba(255,255,255,0.3);
       border-radius: 50%;
       border-top-color: #fff;
@@ -70,12 +72,28 @@
       to { transform: rotate(360deg); }
     }
     
-    .btn-download:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
+    .certificate-info { 
+      background: #f8f9fa; 
+      padding: 20px; 
+      border-radius: 12px; 
+      margin: 20px auto; 
+      max-width: 500px; 
+      border: 1px dashed var(--gold);
+    }
+    .certificate-info p { 
+      color: #666; 
+      font-size: 14px; 
+      margin: 5px 0;
+    }
+    .certificate-info i { 
+      color: var(--gold); 
+      margin-right: 8px; 
     }
     
-    @media (max-width: 768px) { .profile-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { 
+      .profile-grid { grid-template-columns: 1fr; }
+      .btn-download { padding: 14px 30px; font-size: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -135,18 +153,19 @@
   </div>
   
   <div class="certificate-section">
-    <h2><i class="fas fa-certificate"></i> My Certificate</h2>
-    <div class="certificate-preview" id="cert-preview">
-      <img src="/certificate-template.jpg" alt="Certificate" id="cert-image" onerror="this.style.display='none'" />
+    <h2><i class="fas fa-certificate"></i> Download Your Certificate</h2>
+    
+    <div class="certificate-info">
+      <p><i class="fas fa-info-circle"></i> Click the button below to generate and download your certificate.</p>
+      <p><i class="fas fa-file-pdf"></i> Your certificate will be generated as a PDF with your institution name and date.</p>
+      <p><i class="fas fa-download"></i> After downloading, you can view the certificate on your device.</p>
     </div>
-    <div style="text-align:center;">
+    
+    <div style="text-align:center; margin-top: 20px;">
       <button class="btn-download" id="downloadBtn" onclick="downloadCertificate()">
-        <i class="fas fa-download"></i> Download Certificate (PDF)
+        <i class="fas fa-file-pdf"></i> Download Certificate (PDF)
       </button>
     </div>
-    <p style="text-align:center;color:#999;font-size:13px;margin-top:12px;">
-      <i class="fas fa-info-circle"></i> Your institution name and date will be automatically added
-    </p>
   </div>
 </div>
 
@@ -202,6 +221,7 @@ async function downloadCertificate() {
       toastMessage.textContent = '✅ Certificate generated! Downloading...';
       toast.classList.add('show');
       
+      // Download the certificate
       const link = document.createElement('a');
       link.href = data.downloadUrl;
       link.download = data.downloadUrl.split('/').pop();
@@ -210,8 +230,8 @@ async function downloadCertificate() {
       document.body.removeChild(link);
       
       setTimeout(() => {
-        toastMessage.textContent = '✅ Certificate downloaded successfully!';
-        setTimeout(() => toast.classList.remove('show'), 2000);
+        toastMessage.textContent = '✅ Certificate downloaded successfully! You can now view it in your Downloads folder.';
+        setTimeout(() => toast.classList.remove('show'), 3000);
       }, 1000);
     } else {
       toastMessage.textContent = '❌ ' + (data.error || 'Failed to generate certificate');
@@ -225,7 +245,7 @@ async function downloadCertificate() {
     setTimeout(() => toast.classList.remove('show'), 3000);
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-download"></i> Download Certificate (PDF)';
+    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Certificate (PDF)';
   }
 }
 
