@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "add-user": "node add-user.js",
     "view-users": "node view-users.js",
-    "sync": "node sync-google-sheet.js"
+    "sync": "node sync-google-sheet.js",
+    "fix-user": "node fix-user.js"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -19,7 +20,10 @@
     "express-session": "^1.17.3",
     "dotenv": "^16.3.1",
     "body-parser": "^1.20.2",
-    "googleapis": "^134.0.0"
+    "pdf-lib": "^1.17.1",
+    "canvas": "^2.11.2",
+    "sharp": "^0.33.2",
+    "jspdf": "^2.5.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

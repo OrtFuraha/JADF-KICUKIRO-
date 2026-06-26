@@ -123,6 +123,11 @@ async function initializeDatabase() {
       console.log('✅ Default statistics created');
     }
 
+    // Create certificates directory if not exists
+    if (!fs.existsSync('./certificates')) {
+      fs.mkdirSync('./certificates');
+    }
+
     console.log('✅ Database initialized successfully');
     
     const userCount = await db.get('SELECT COUNT(*) as count FROM users');
@@ -219,6 +224,18 @@ app.get('/api/user/profile', async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Ensure institution name is displayed properly
+    if (!user.full_name || user.full_name === '' || !isNaN(user.full_name)) {
+      const email = user.email || '';
+      const domain = email.split('@')[1] || '';
+      const defaultNames = {
+        'gmail.com': 'Gmail User',
+        'yahoo.com': 'Yahoo User',
+        'example.com': 'Example User'
+      };
+      user.full_name = defaultNames[domain] || 'Organization';
     }
 
     res.json({ success: true, user });
@@ -461,6 +478,55 @@ app.post('/api/certificate/download', async (req, res) => {
   }
 });
 
+// Generate certificate API
+app.post('/api/generate-certificate', async (req, res) => {
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const userName = req.session.user.full_name || 'Participant';
+    const timestamp = Date.now();
+    const fileName = `Certificate_${userName.replace(/\s/g, '_')}_${timestamp}.pdf`;
+    const filePath = path.join(__dirname, 'certificates', fileName);
+    
+    // Generate certificate using pdf-lib
+    const { generateCertificateWithPDF } = require('./generate-certificate.js');
+    await generateCertificateWithPDF(userName, filePath);
+    
+    // Record in database
+    await db.run(`
+      INSERT INTO certificates (user_id, certificate_path, downloaded_at)
+      VALUES (?, ?, CURRENT_TIMESTAMP)
+    `, [req.session.user.id, filePath]);
+
+    await db.run(`
+      UPDATE statistics 
+      SET stat_value = stat_value + 1, updated_at = CURRENT_TIMESTAMP
+      WHERE stat_key = 'certificates_issued'
+    `);
+
+    res.json({
+      success: true,
+      message: 'Certificate generated successfully',
+      downloadUrl: `/certificates/${fileName}`
+    });
+  } catch (error) {
+    console.error('Certificate generation error:', error);
+    res.status(500).json({ error: 'Failed to generate certificate' });
+  }
+});
+
+// Download certificate
+app.get('/certificates/:filename', (req, res) => {
+  const filePath = path.join(__dirname, 'certificates', req.params.filename);
+  if (fs.existsSync(filePath)) {
+    res.download(filePath);
+  } else {
+    res.status(404).json({ error: 'Certificate not found' });
+  }
+});
+
 // Sync from Google Sheets - Admin endpoint
 app.post('/api/sync-sheets', async (req, res) => {
   try {
@@ -519,11 +585,11 @@ async function startServer() {
       console.log('║   👤 User Login: http://localhost:' + PORT + '/login.html ║');
       console.log('║                                                       ║');
       console.log('║   📧 Admin Login: admin@govcert.io / admin123        ║');
-      console.log('║   📧 User Login: johnhakiza77@gmail.com / 0788628401 ║');
+      console.log('║   📧 User Login: etiennetuyishime55@gmail.com / 0785689864 ║');
       console.log('║                                                       ║');
       console.log('║   💾 Database: SQLite (./data/govcert.db)            ║');
-      console.log('║   📄 Certificate Generation: Browser-based           ║');
-      console.log('║   📊 Google Sheets Sync: Available                   ║');
+      console.log('║   📄 Certificate Generation: PDF-lib                ║');
+      console.log('║   📁 Using: JADF Certificate.pdf                    ║');
       console.log('║                                                       ║');
       console.log('║   Press Ctrl+C to stop the server                    ║');
       console.log('║                                                       ║');

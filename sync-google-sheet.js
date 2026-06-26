@@ -13,12 +13,10 @@ function fetchCSV(url, timeout = 30000) {
     const client = url.startsWith('https') ? https : http;
     
     const request = client.get(url, (response) => {
-      // Handle redirects (307 is temporary redirect)
       if (response.statusCode === 302 || response.statusCode === 301 || response.statusCode === 307) {
         const redirectUrl = response.headers.location;
         if (redirectUrl) {
           console.log(`[${new Date().toISOString()}] Following redirect...`);
-          // For 307, preserve the method
           return fetchCSV(redirectUrl).then(resolve).catch(reject);
         }
       }
@@ -34,7 +32,6 @@ function fetchCSV(url, timeout = 30000) {
       });
       
       response.on('end', () => {
-        // Check if we got HTML instead of CSV
         if (data.trim().startsWith('<') || data.trim().startsWith('<!DOCTYPE')) {
           reject(new Error('Received HTML instead of CSV. Sheet may not be public.'));
           return;
@@ -47,7 +44,6 @@ function fetchCSV(url, timeout = 30000) {
       });
     });
     
-    // Timeout
     request.setTimeout(timeout, () => {
       request.destroy();
       reject(new Error('Request timeout'));
@@ -64,7 +60,6 @@ function parseCSV(csvData) {
   const lines = csvData.split('\n').filter(line => line.trim());
   if (lines.length < 2) return { headers: [], rows: [] };
   
-  // Parse headers
   const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
   const rows = [];
   
@@ -72,7 +67,6 @@ function parseCSV(csvData) {
     const line = lines[i].trim();
     if (!line) continue;
     
-    // Parse CSV line (handles quoted fields)
     const values = [];
     let current = '';
     let inQuotes = false;
@@ -105,10 +99,8 @@ function parseCSV(csvData) {
 async function syncUsersFromSheet() {
   console.log(`[${new Date().toISOString()}] Starting Google Sheet sync...`);
 
-  // The sheet ID
   const sheetId = '1BiqmLOwHoNRFUQNNEfRf3eEnT1y58GJttmEcn1z-AUM';
   
-  // Try multiple URLs
   const urls = [
     `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`,
     `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`,
@@ -136,7 +128,6 @@ async function syncUsersFromSheet() {
 
   console.log(`[${new Date().toISOString()}] ✅ Data fetched successfully!`);
   
-  // Parse CSV
   const { headers, rows } = parseCSV(csvData);
   
   if (rows.length === 0) {
@@ -147,9 +138,9 @@ async function syncUsersFromSheet() {
   console.log(`[${new Date().toISOString()}] 📋 Headers: ${headers.join(', ')}`);
   console.log(`[${new Date().toISOString()}] 📊 Found ${rows.length} rows of data`);
   
-  // Show all rows as sample
-  console.log(`[${new Date().toISOString()}] 📋 All data:`);
-  rows.forEach((row, i) => {
+  // Show sample data
+  console.log(`[${new Date().toISOString()}] 📋 Sample data:`);
+  rows.slice(0, 3).forEach((row, i) => {
     console.log(`   Row ${i + 1}: ${JSON.stringify(row)}`);
   });
 
@@ -173,20 +164,20 @@ async function syncUsersFromSheet() {
   let updatedCount = 0;
   let skippedCount = 0;
 
-  // Process each row
+  // Process each row - map columns correctly
   for (const row of rows) {
-    // Try to find email and name columns (case insensitive)
-    const email = row['Email'] || row['email'] || row['EMAIL'] || '';
-    const name = row['Full names'] || row['No'] || row['Name'] || row['full_name'] || row['NAME'] || '';
-    const phone = row['Phone number'] || row['Phone'] || row['phone'] || row['PHONE'] || '';
+    // Map columns based on your Google Sheet structure
+    // No, Institution Name, Email, Phone number, District, Sector, Cell, Village
+    const institutionName = row['Institution Name'] || row['Full names'] || row['Name'] || '';
+    const email = row['Email'] || row['email'] || '';
+    const phone = row['Phone number'] || row['Phone'] || row['phone'] || '';
     const district = row['District'] || row['district'] || 'KICUKIRO';
     const sector = row['Sector'] || row['sector'] || '';
-    const village = row['Village'] || row['village'] || '';
     const cell = row['Cell'] || row['cell'] || '';
-    const organization = row['Organization'] || row['organization'] || '';
+    const village = row['Village'] || row['village'] || '';
 
-    if (!email || !name) {
-      console.log(`[${new Date().toISOString()}] ⚠️ Skipping row - missing email or name:`, row);
+    if (!email || !institutionName) {
+      console.log(`[${new Date().toISOString()}] ⚠️ Skipping row - missing email or institution name:`, row);
       skippedCount++;
       continue;
     }
@@ -197,21 +188,23 @@ async function syncUsersFromSheet() {
       const existingUser = await db.get('SELECT * FROM users WHERE email = ?', [email]);
 
       if (existingUser) {
+        // Update existing user with institution name
         await db.run(`
           UPDATE users 
-          SET full_name = ?, district = ?, sector = ?, village = ?, cell = ?, organization = ?, phone = ?, updated_at = CURRENT_TIMESTAMP
+          SET full_name = ?, district = ?, sector = ?, cell = ?, village = ?, phone = ?, updated_at = CURRENT_TIMESTAMP
           WHERE email = ?
-        `, [name, district, sector, village, cell, organization, cleanPhone, email]);
+        `, [institutionName, district, sector, cell, village, cleanPhone, email]);
         updatedCount++;
-        console.log(`[${new Date().toISOString()}] ✅ Updated: ${name} (${email})`);
+        console.log(`[${new Date().toISOString()}] ✅ Updated: ${institutionName} (${email})`);
       } else {
+        // Insert new user with phone as password
         const password = cleanPhone || '0788000000';
         await db.run(`
-          INSERT INTO users (email, phone, password, full_name, district, sector, village, cell, organization, role)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'user')
-        `, [email, password, password, name, district, sector, village, cell, organization]);
+          INSERT INTO users (email, phone, password, full_name, district, sector, cell, village, role)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'user')
+        `, [email, password, password, institutionName, district, sector, cell, village]);
         addedCount++;
-        console.log(`[${new Date().toISOString()}] ✅ Added: ${name} (${email}) - Password: ${password}`);
+        console.log(`[${new Date().toISOString()}] ✅ Added: ${institutionName} (${email}) - Password: ${password}`);
       }
     } catch (error) {
       console.error(`[${new Date().toISOString()}] ❌ Error processing ${email}:`, error.message);
@@ -223,24 +216,6 @@ async function syncUsersFromSheet() {
 
   console.log(`[${new Date().toISOString()}] ✅ Sync completed!`);
   console.log(`[${new Date().toISOString()}] 📊 Added: ${addedCount}, Updated: ${updatedCount}, Skipped: ${skippedCount}`);
-  
-  // Show total users
-  const totalUsers = await getTotalUsers();
-  console.log(`[${new Date().toISOString()}] 📊 Total users in database: ${totalUsers}`);
-}
-
-async function getTotalUsers() {
-  try {
-    const db = await open({
-      filename: DB_PATH,
-      driver: sqlite3.Database
-    });
-    const result = await db.get('SELECT COUNT(*) as count FROM users');
-    await db.close();
-    return result.count;
-  } catch (error) {
-    return 'Unknown';
-  }
 }
 
 // Run sync if called directly
